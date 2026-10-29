@@ -1,0 +1,338 @@
+{
+  "0": {
+    "Address": 0,
+    "Width": 32,
+    "ResetValue": 4096,
+    "Value": 4660,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "addr",
+        "Address": 0,
+        "BitBias": 0,
+        "BitNum": 12,
+        "Value": 564,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "len",
+        "Address": 0,
+        "BitBias": 12,
+        "BitNum": 12,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "cmd",
+        "Address": 0,
+        "BitBias": 24,
+        "BitNum": 7,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "busy",
+        "Address": 0,
+        "BitBias": 31,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "DMA"
+  },
+  "4": {
+    "Address": 4,
+    "Width": 32,
+    "ResetValue": 4097,
+    "Value": 4808,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "addr",
+        "Address": 4,
+        "BitBias": 0,
+        "BitNum": 12,
+        "Value": 712,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "len",
+        "Address": 4,
+        "BitBias": 12,
+        "BitNum": 12,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "cmd",
+        "Address": 4,
+        "BitBias": 24,
+        "BitNum": 7,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "busy",
+        "Address": 4,
+        "BitBias": 31,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "DMA"
+  },
+  "8": {
+    "Address": 8,
+    "Width": 32,
+    "ResetValue": 4098,
+    "Value": 4956,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "addr",
+        "Address": 8,
+        "BitBias": 0,
+        "BitNum": 12,
+        "Value": 860,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "len",
+        "Address": 8,
+        "BitBias": 12,
+        "BitNum": 12,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "cmd",
+        "Address": 8,
+        "BitBias": 24,
+        "BitNum": 7,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "busy",
+        "Address": 8,
+        "BitBias": 31,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "DMA"
+  },
+  "12": {
+    "Address": 12,
+    "Width": 32,
+    "ResetValue": 4099,
+    "Value": 5104,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "addr",
+        "Address": 12,
+        "BitBias": 0,
+        "BitNum": 12,
+        "Value": 1008,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "len",
+        "Address": 12,
+        "BitBias": 12,
+        "BitNum": 12,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "cmd",
+        "Address": 12,
+        "BitBias": 24,
+        "BitNum": 7,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "busy",
+        "Address": 12,
+        "BitBias": 31,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "DMA"
+  },
+  "16": {
+    "Address": 16,
+    "Width": 32,
+    "ResetValue": 4100,
+    "Value": 5252,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "addr",
+        "Address": 16,
+        "BitBias": 0,
+        "BitNum": 12,
+        "Value": 1156,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "len",
+        "Address": 16,
+        "BitBias": 12,
+        "BitNum": 12,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "cmd",
+        "Address": 16,
+        "BitBias": 24,
+        "BitNum": 7,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "busy",
+        "Address": 16,
+        "BitBias": 31,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Stream"
+  },
+  "20": {
+    "Address": 20,
+    "Width": 32,
+    "ResetValue": 4101,
+    "Value": 5400,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "addr",
+        "Address": 20,
+        "BitBias": 0,
+        "BitNum": 12,
+        "Value": 1304,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "len",
+        "Address": 20,
+        "BitBias": 12,
+        "BitNum": 12,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "cmd",
+        "Address": 20,
+        "BitBias": 24,
+        "BitNum": 7,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "busy",
+        "Address": 20,
+        "BitBias": 31,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Stream"
+  },
+  "24": {
+    "Address": 24,
+    "Width": 32,
+    "ResetValue": 4102,
+    "Value": 5548,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "addr",
+        "Address": 24,
+        "BitBias": 0,
+        "BitNum": 12,
+        "Value": 1452,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "len",
+        "Address": 24,
+        "BitBias": 12,
+        "BitNum": 12,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "cmd",
+        "Address": 24,
+        "BitBias": 24,
+        "BitNum": 7,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "busy",
+        "Address": 24,
+        "BitBias": 31,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Stream"
+  },
+  "28": {
+    "Address": 28,
+    "Width": 32,
+    "ResetValue": 4103,
+    "Value": 5696,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "addr",
+        "Address": 28,
+        "BitBias": 0,
+        "BitNum": 12,
+        "Value": 1600,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "len",
+        "Address": 28,
+        "BitBias": 12,
+        "BitNum": 12,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "cmd",
+        "Address": 28,
+        "BitBias": 24,
+        "BitNum": 7,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "busy",
+        "Address": 28,
+        "BitBias": 31,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Stream"
+  }
+}

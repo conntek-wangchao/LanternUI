@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>LanternUI.Demo</RootNamespace>
+    <AssemblyName>LanternUI.Demo</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LanternUI\LanternUI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Localization\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\backdrop-sample.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\helan-registers.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\registers-16.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\registers-32.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\registers-bank.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

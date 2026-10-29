@@ -1,0 +1,16 @@
+# Literals the string audits allow in src/LanternUI (everything else must go through ILocalizer.T).
+# One literal per line, no quotes. Keep this list short and justified.
+Segoe Fluent Icons
+
+# A language is always listed in its own script, so these endonyms must not be translated.
+简体中文
+繁體中文
+日本語
+
+# The justification text on the single-file guard in UpdateApplier; it is documentation on a
+# suppression attribute, never shown to anyone running the application.
+A single-file app reports no location; the executable is then the only file in use.
+
+# An exception message from RegisterEntry.AddField: it explains a bad map to whoever wrote the map,
+# and never reaches the interface (the loader catches the overlap and keeps the first field).
+the field does not fit in the register

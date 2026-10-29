@@ -1,0 +1,427 @@
+<UserControl x:Class="HelanTestPlatform.Views.HelanRegisterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:HelanTestPlatform.Views"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:vr="clr-namespace:HelanTestPlatform.ValidationRules"
+             xmlns:Gl="clr-namespace:GaugeLibrary;assembly=GaugeLibrary"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <Style TargetType="TextBlock">
+            <Style.Setters>
+                <Setter Property="HorizontalAlignment"
+                        Value="Center" />
+                <Setter Property="VerticalAlignment"
+                        Value="Center" />
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="CenterTextBox"
+               TargetType="TextBox">
+            <Style.Setters>
+                <Setter Property="HorizontalContentAlignment"
+                        Value="Center" />
+                <Setter Property="VerticalContentAlignment"
+                        Value="Center" />
+                <Setter Property="BorderBrush"
+                        Value="#fedcda" />
+                <Setter Property="BorderThickness"
+                        Value="1" />
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="CommonBorder"
+               TargetType="Border">
+            <Style.Setters>
+                <Setter Property="BorderBrush"
+                        Value="#fedcda" />
+                <Setter Property="BorderThickness"
+                        Value="1" />
+                <Setter Property="Background"
+                        Value="#e5d7ed" />
+            </Style.Setters>
+        </Style>
+    </UserControl.Resources>
+    <Viewbox Stretch="Uniform">
+        <Grid Width="820"
+              Height="800">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="40" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <DockPanel LastChildFill="False">
+                <GroupBox Header="工位选择"
+                          Margin="10,0"
+                          Padding="5">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="工位1"
+                                     IsChecked="{Binding IsStation1Selected}"
+                                     GroupName="WorkStationGroup"
+                                     Margin="5,0" />
+                        <RadioButton Content="工位2"
+                                     IsChecked="{Binding IsStation2Selected}"
+                                     GroupName="WorkStationGroup"
+                                     Margin="5,0" />
+                        <RadioButton Content="工位3"
+                                     IsChecked="{Binding IsStation3Selected}"
+                                     GroupName="WorkStationGroup"
+                                     Margin="5,0" />
+                        <RadioButton Content="工位4"
+                                     IsChecked="{Binding IsStation4Selected}"
+                                     GroupName="WorkStationGroup"
+                                     Margin="5,0" />
+                    </StackPanel>
+                </GroupBox>
+                <UniformGrid Columns="3" Width="400" Height="90">
+                    <!-- 工位选择区域 -->
+                    
+                    <Button Margin="5,0"
+                            Command="{Binding ReadAllRegCommand}"
+                            Content="同步寄存器"
+                            FontSize="11"
+                            Style="{StaticResource MaterialDesignOutlinedDarkButton}"
+                            ToolTip="读取表中所有的寄存器" />
+                    <Button Margin="0,0,5,0"
+                            Command="{Binding WriteAllRegCommand}"
+                            Content="写入配置"
+                            FontSize="11"
+                            Style="{StaticResource MaterialDesignOutlinedDarkButton}"
+                            ToolTip="将表中所有的寄存器写入芯片" />
+                    <Button Margin="0,0,10,0"
+                            Command="{Binding InputConfigCommand}"
+                            Content="导入配置"
+                            FontSize="11"
+                            Style="{StaticResource MaterialDesignOutlinedDarkButton}" />
+                    <TextBlock Margin="0,0,10,0"
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               Text="当前配置文件：" />
+                    <TextBox Margin="0,0,10,0"
+                             Text="{Binding CurrentConfigFilePath}"
+                             VerticalAlignment="Center"
+                             TextWrapping="NoWrap"
+                             MaxWidth="300"
+                             materialDesign:HintAssist.Hint="配置文件位置"
+                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                             IsReadOnly="True" />
+                    <Button Margin="0,0,10,0"
+                            Command="{Binding OutputConfigCommand}"
+                            Content="导出配置文件"
+                            FontSize="11"
+                            Style="{StaticResource MaterialDesignOutlinedDarkButton}" />
+                </UniformGrid>
+                <UniformGrid DockPanel.Dock="Right" Columns="2">
+                    <TextBlock VerticalAlignment="Center"
+                               FontSize="16"
+                               Text="status:"
+                               Margin="10,0" />
+                    <Gl:StatusLED Margin="5"
+                                  Status="{Binding OperationCheck}"
+                                  TrueColorFirst="#ffe4e1"
+                                  TrueColorSecond="#f6eafc"
+                                  FalseColorFirst="#d5cdd8"
+                                  FalseColorSecond="#a5a5a5" />
+                </UniformGrid>
+            </DockPanel>
+            <Grid Grid.Row="1"
+                  Margin="0,0,20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="8*" />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="地址" />
+                <UniformGrid Grid.Column="1"
+                             Columns="8">
+                    <TextBlock Text="Bit7" />
+                    <TextBlock Text="Bit6" />
+                    <TextBlock Text="Bit5" />
+                    <TextBlock Text="Bit4" />
+                    <TextBlock Text="Bit3" />
+                    <TextBlock Text="Bit2" />
+                    <TextBlock Text="Bit1" />
+                    <TextBlock Text="Bit0" />
+                </UniformGrid>
+                <TextBlock Grid.Column="2"
+                           Text="值(Dec)" />
+                <TextBlock Grid.Column="3"
+                           Text="值(Hex)" />
+                <TextBlock Grid.Column="4"
+                           Text="读寄存器" />
+                <TextBlock Grid.Column="5"
+                           Text="Reset" />
+                <TextBlock Grid.Column="6"
+                           Text="只读" />
+                <TextBlock Grid.Column="7"
+                           Text="Status" />
+                
+            </Grid>
+
+            <ScrollViewer Margin="5"
+                          Grid.Row="2">
+                <!--<i:Interaction.Triggers>
+            <i:EventTrigger EventName="ScrollChanged">
+                <i:InvokeCommandAction Command="{Binding UpdateScrollCommand}"
+                                       CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ScrollViewer}}}" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>-->
+
+                <ItemsControl ItemsSource="{Binding HelanRegMap}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel VerticalAlignment="Stretch" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Height="120">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="8*" />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0"
+                                        Style="{StaticResource CommonBorder}">
+                                    <TextBlock HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Value.Address, Converter={StaticResource ByteToHexStrConverter}}" />
+                                </Border>
+
+                                <ItemsControl Grid.Column="1"
+                                              ItemsSource="{Binding Value.RegisterBitsList}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                            </Grid>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+
+                                    <ItemsControl.ItemContainerStyle>
+                                        <Style>
+                                            <Setter Property="Grid.Column">
+                                                <Setter.Value>
+                                                    <MultiBinding Converter="{StaticResource RegBitBiasToGridColumnConverter}">
+                                                        <Binding Path="BitBias" />
+                                                        <Binding Path="BitNum" />
+                                                    </MultiBinding>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="Grid.ColumnSpan"
+                                                    Value="{Binding BitNum}" />
+                                        </Style>
+                                    </ItemsControl.ItemContainerStyle>
+
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel>
+                                                <TextBox Height="40"
+                                                         Background="{Binding IsReadOnly, Converter={StaticResource IsReadOnlyToBackgroundConverter}}"
+                                                         IsReadOnly="True"
+                                                         Style="{StaticResource CenterTextBox}"
+                                                         Text="{Binding Name}" />
+                                                <TextBox Height="40"
+                                                         Background="{Binding IsReadOnly, Converter={StaticResource IsReadOnlyToBackgroundConverter}}"
+                                                         IsReadOnly="{Binding IsReadOnly}"
+                                                         Style="{StaticResource CenterTextBox}">
+                                                    <TextBox.Resources>
+                                                        <vr:BindingProxy x:Key="RegBitNumProxy"
+                                                                         Data="{Binding BitNum}" />
+                                                    </TextBox.Resources>
+                                                    <Binding Path="Value"
+                                                             UpdateSourceTrigger="PropertyChanged">
+                                                        <Binding.ValidationRules>
+                                                            <vr:RegValueValidationRule>
+                                                                <vr:RegValueValidationRule.Params>
+                                                                    <vr:ValidationParams Data="{Binding Data, Source={StaticResource RegBitNumProxy}}" />
+                                                                </vr:RegValueValidationRule.Params>
+                                                            </vr:RegValueValidationRule>
+                                                        </Binding.ValidationRules>
+                                                    </Binding>
+
+                                                    <TextBox.InputBindings>
+                                                        <KeyBinding Key="Enter"
+                                                                    Command="{Binding UserBitsEnterCommand}"
+                                                                    CommandParameter="{Binding Text, RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}" />
+                                                    </TextBox.InputBindings>
+
+                                                    <!--<i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="GotFocus">
+                                                    <i:InvokeCommandAction Command="{Binding RefreshBitFocusCommand}"
+                                                                           CommandParameter="{Binding IsFocused, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}" />
+                                                </i:EventTrigger>
+
+                                                <i:EventTrigger EventName="LostFocus">
+                                                    <i:InvokeCommandAction Command="{Binding RefreshBitFocusCommand}"
+                                                                           CommandParameter="{Binding IsFocused, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}" />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>-->
+                                                </TextBox>
+                                                <ItemsControl Background="{Binding IsReadOnly, Converter={StaticResource IsReadOnlyToBackgroundConverter}}"
+                                                              IsEnabled="{Binding IsReadOnly,Converter={StaticResource BoolReverseConverter}}"
+                                                              Height="40"
+                                                              ItemsSource="{Binding RegisterBitList}"
+                                                              BorderBrush="#fedcda"
+                                                              BorderThickness="1">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="{Binding BitNum}" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <ToggleButton IsChecked="{Binding BitValue,Converter={StaticResource ByteToBoolConverter}}"
+                                                                          materialDesign:ElevationAssist.Elevation="Dp8"
+                                                                          materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=Numeric1}"
+                                                                          Content="{materialDesign:PackIcon Kind=Numeric0}"
+                                                                          Style="{StaticResource MaterialDesignActionToggleButton}">
+                                                                <i:Interaction.Triggers>
+                                                                    <i:EventTrigger EventName="Click">
+                                                                        <i:InvokeCommandAction Command="{Binding BitChangeCommand}" />
+                                                                    </i:EventTrigger>
+                                                                </i:Interaction.Triggers>
+                                                            </ToggleButton>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBox Grid.Column="2"
+                                         Background="{Binding Value.IsReadOnly, Converter={StaticResource IsReadOnlyToBackgroundConverter}}"
+                                         IsReadOnly="{Binding Value.IsReadOnly}"
+                                         Style="{StaticResource CenterTextBox}">
+                                    <TextBox.Resources>
+                                        <vr:BindingProxy x:Key="RegBitNumProxy"
+                                                         Data="8" />
+                                    </TextBox.Resources>
+                                    <Binding Path="Value.Value"
+                                             UpdateSourceTrigger="PropertyChanged">
+                                        <Binding.ValidationRules>
+                                            <vr:RegValueValidationRule>
+                                                <vr:RegValueValidationRule.Params>
+                                                    <vr:ValidationParams Data="{Binding Data, Source={StaticResource RegBitNumProxy}}" />
+                                                </vr:RegValueValidationRule.Params>
+                                            </vr:RegValueValidationRule>
+                                        </Binding.ValidationRules>
+                                    </Binding>
+
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter"
+                                                    Command="{Binding Value.UserEnterCommand}"
+                                                    CommandParameter="{Binding Text, RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}" />
+                                    </TextBox.InputBindings>
+
+                                    <!--<i:Interaction.Triggers>
+                                <i:EventTrigger EventName="GotFocus">
+                                    <i:InvokeCommandAction Command="{Binding Value.RefreshByteFocusCommand}"
+                                                           CommandParameter="{Binding IsFocused, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}" />
+                                </i:EventTrigger>
+
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding Value.RefreshByteFocusCommand}"
+                                                           CommandParameter="{Binding IsFocused, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>-->
+                                </TextBox>
+
+                                <TextBox Grid.Column="3"
+                                         Background="{Binding Value.IsReadOnly, Converter={StaticResource IsReadOnlyToBackgroundConverter}}"
+                                         IsReadOnly="{Binding Value.IsReadOnly}"
+                                         Style="{StaticResource CenterTextBox}">
+                                    <Binding Converter="{StaticResource ByteToHexConverter}"
+                                             Path="Value.Value"
+                                             UpdateSourceTrigger="PropertyChanged">
+                                        <Binding.ValidationRules>
+                                            <vr:RegHexValueValidationRule />
+                                        </Binding.ValidationRules>
+                                    </Binding>
+
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Enter"
+                                                    Command="{Binding Value.UserHexEnterCommand}"
+                                                    CommandParameter="{Binding Text, RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}" />
+                                    </TextBox.InputBindings>
+
+                                    <!--<i:Interaction.Triggers>
+                                <i:EventTrigger EventName="GotFocus">
+                                    <i:InvokeCommandAction Command="{Binding Value.RefreshByteFocusCommand}"
+                                                           CommandParameter="{Binding IsFocused, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}" />
+                                </i:EventTrigger>
+
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding Value.RefreshByteFocusCommand}"
+                                                           CommandParameter="{Binding IsFocused, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type TextBox}}}" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>-->
+                                </TextBox>
+
+                                <Border Grid.Column="4"
+                                        BorderBrush="#fedcda"
+                                        BorderThickness="1">
+                                    <Button Content="读取"
+                                            FontSize="10"
+                                            Margin="7"
+                                            Padding="5,2"
+                                            Command="{Binding Value.ReadRegisterCommand}" Style="{StaticResource MaterialDesignRaisedSecondaryButton}"/>
+                                </Border>
+                                
+                                <Border Grid.Column="5"
+                                        Style="{StaticResource CommonBorder}">
+                                    <TextBlock HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Value.ResetValue}" />
+                                </Border>
+
+                                <Border Grid.Column="6"
+                                        Style="{StaticResource CommonBorder}">
+                                    <TextBlock HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Value.IsReadOnly}" />
+                                </Border>
+
+                                <Border Grid.Column="7"
+                                        Style="{StaticResource CommonBorder}">
+                                    <Gl:StatusLED Margin="5"
+                                                  Status="{Binding Value.Status}"
+                                                  TrueColorFirst="#ffe4e1"
+                                                  TrueColorSecond="#f6eafc"
+                                                  FalseColorFirst="#d5cdd8"
+                                                  FalseColorSecond="#a5a5a5" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </Viewbox>
+</UserControl>

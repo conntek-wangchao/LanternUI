@@ -1,0 +1,226 @@
+{
+    "0": {
+        "Address": 0,
+        "ResetValue": 0,
+        "Value": 0,
+        "IsReadOnly": false,
+        "RegisterBitsList": [
+            {
+                "Name": "passwd(0x5A)",
+                "Address": 0,
+                "BitBias": 0,
+                "BitNum": 8,
+                "Value": 0,
+                "IsReadOnly": false
+            }
+        ]
+    },
+    "1": {
+        "Address": 1,
+        "ResetValue": 3,
+        "Value": 3,
+        "IsReadOnly": false,
+        "RegisterBitsList": [
+            {
+                "Name": "wsel",
+                "Address": 1,
+                "BitBias": 0,
+                "BitNum": 4,
+                "Value": 3,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "rd",
+                "Address": 1,
+                "BitBias": 4,
+                "BitNum": 2,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "N/A",
+                "Address": 1,
+                "BitBias": 6,
+                "BitNum": 2,
+                "Value": 0,
+                "IsReadOnly": false
+            }
+        ]
+    },
+    "2": {
+        "Address": 2,
+        "ResetValue": 0,
+        "Value": 0,
+        "IsReadOnly": false,
+        "RegisterBitsList": [
+            {
+                "Name": "read_otp",
+                "Address": 2,
+                "BitBias": 0,
+                "BitNum": 1,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "program_otp",
+                "Address": 2,
+                "BitBias": 1,
+                "BitNum": 1,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "osc_en",
+                "Address": 2,
+                "BitBias": 2,
+                "BitNum": 1,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "N/A",
+                "Address": 2,
+                "BitBias": 3,
+                "BitNum": 5,
+                "Value": 0,
+                "IsReadOnly": false
+            }
+        ]
+    },
+    "3": {
+        "Address": 3,
+        "ResetValue": 2,
+        "Value": 2,
+        "IsReadOnly": false,
+        "RegisterBitsList": [
+            {
+                "Name": "quit_owi",
+                "Address": 3,
+                "BitBias": 0,
+                "BitNum": 1,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "pg_time",
+                "Address": 3,
+                "BitBias": 1,
+                "BitNum": 2,
+                "Value": 1,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "N/A",
+                "Address": 3,
+                "BitBias": 3,
+                "BitNum": 5,
+                "Value": 0,
+                "IsReadOnly": false
+            }
+        ]
+    },
+    "4": {
+        "Address": 4,
+        "ResetValue": 0,
+        "Value": 0,
+        "IsReadOnly": false,
+        "RegisterBitsList": [
+            {
+                "Name": "rw_flag",
+                "Address": 4,
+                "BitBias": 0,
+                "BitNum": 1,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "g1",
+                "Address": 4,
+                "BitBias": 1,
+                "BitNum": 3,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "g2",
+                "Address": 4,
+                "BitBias": 4,
+                "BitNum": 2,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "gd[0]",
+                "Address": 4,
+                "BitBias": 6,
+                "BitNum": 1,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "zd[0]",
+                "Address": 4,
+                "BitBias": 7,
+                "BitNum": 1,
+                "Value": 0,
+                "IsReadOnly": false
+            }
+        ]
+    },
+    "5": {
+        "Address": 5,
+        "ResetValue": 0,
+        "Value": 0,
+        "IsReadOnly": false,
+        "RegisterBitsList": [
+            {
+                "Name": "gd[8:1]",
+                "Address": 5,
+                "BitBias": 0,
+                "BitNum": 8,
+                "Value": 0,
+                "IsReadOnly": false
+            }
+        ]
+    },
+    "6": {
+        "Address": 6,
+        "ResetValue": 0,
+        "Value": 0,
+        "IsReadOnly": false,
+        "RegisterBitsList": [
+            {
+                "Name": "zd[8:1]",
+                "Address": 6,
+                "BitBias": 0,
+                "BitNum": 8,
+                "Value": 0,
+                "IsReadOnly": false
+            }
+        ]
+    },
+    "7": {
+        "Address": 7,
+        "ResetValue": 0,
+        "Value": 0,
+        "IsReadOnly": false,
+        "RegisterBitsList": [
+            {
+                "Name": "sel_single",
+                "Address": 7,
+                "BitBias": 0,
+                "BitNum": 1,
+                "Value": 0,
+                "IsReadOnly": false
+            },
+            {
+                "Name": "N/A",
+                "Address": 7,
+                "BitBias": 1,
+                "BitNum": 7,
+                "Value": 0,
+                "IsReadOnly": false
+            }
+        ]
+    }
+}

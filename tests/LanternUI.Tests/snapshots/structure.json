@@ -1,0 +1,51 @@
+{
+  "pages": {
+    "about": [
+      "Version",
+      "Update channel",
+      "Updates",
+      "Toggle row",
+      "Choice row (drop-down)",
+      "Sections",
+      "Search index"
+    ],
+    "appearance": [
+      "Language",
+      "Layout",
+      "Accent colour",
+      "High contrast",
+      "Background",
+      "Blur",
+      "Reading direction",
+      "Navigation",
+      "Window buttons",
+      "Buttons side",
+      "Show the log at start",
+      "Data folder",
+      "Write the log to a file",
+      "Keep the log for",
+      "Shader cache",
+      "Verbose log",
+      "Resolution",
+      "Frame limit",
+      "Overlay opacity",
+      "Volume"
+    ],
+    "list": [],
+    "more": [],
+    "shortcuts": [
+      "Pointer speed",
+      "Invert the vertical axis",
+      "Show the frame counter",
+      "Screenshot folder"
+    ]
+  },
+  "tokens": {
+    "AccentBrush": "#FF4C9DFF",
+    "CardBackgroundBrush": "#FF2E2E31",
+    "CardStrokeBrush": "#FF3A3A3E",
+    "TextPrimaryBrush": "#FFF2F2F4",
+    "TextTertiaryBrush": "#FF8A8A93",
+    "WindowBaseBrush": "#FF242426"
+  }
+}

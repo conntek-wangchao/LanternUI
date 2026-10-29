@@ -1,0 +1,698 @@
+{
+  "0": {
+    "Address": 0,
+    "Width": 16,
+    "ResetValue": 4096,
+    "Value": 4660,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 0,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 0,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 2,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 0,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 35,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 0,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 0,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 0,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Clock"
+  },
+  "2": {
+    "Address": 2,
+    "Width": 16,
+    "ResetValue": 4097,
+    "Value": 4734,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 2,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 2,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 7,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 2,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 39,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 2,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 2,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 2,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Clock"
+  },
+  "4": {
+    "Address": 4,
+    "Width": 16,
+    "ResetValue": 4098,
+    "Value": 4808,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 4,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 4,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 4,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 4,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 44,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 4,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 4,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 4,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Clock"
+  },
+  "6": {
+    "Address": 6,
+    "Width": 16,
+    "ResetValue": 4099,
+    "Value": 4882,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 6,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 6,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 6,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 49,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 6,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 6,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 6,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Clock"
+  },
+  "8": {
+    "Address": 8,
+    "Width": 16,
+    "ResetValue": 4100,
+    "Value": 4956,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 8,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 8,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 6,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 8,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 53,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 8,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 8,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 8,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Clock"
+  },
+  "10": {
+    "Address": 10,
+    "Width": 16,
+    "ResetValue": 4101,
+    "Value": 5030,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 10,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 10,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 3,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 10,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 58,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 10,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 10,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 10,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Clock"
+  },
+  "12": {
+    "Address": 12,
+    "Width": 16,
+    "ResetValue": 4102,
+    "Value": 5104,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 12,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 12,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 12,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 63,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 12,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 12,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 12,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Data"
+  },
+  "14": {
+    "Address": 14,
+    "Width": 16,
+    "ResetValue": 4103,
+    "Value": 5178,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 14,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 14,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 5,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 14,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 67,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 14,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 14,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 14,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Data"
+  },
+  "16": {
+    "Address": 16,
+    "Width": 16,
+    "ResetValue": 4104,
+    "Value": 5252,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 16,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 16,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 2,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 16,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 72,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 16,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 16,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 16,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Data"
+  },
+  "18": {
+    "Address": 18,
+    "Width": 16,
+    "ResetValue": 4105,
+    "Value": 5326,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 18,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 18,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 7,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 18,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 76,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 18,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 18,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 18,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Data"
+  },
+  "20": {
+    "Address": 20,
+    "Width": 16,
+    "ResetValue": 4106,
+    "Value": 5400,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 20,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 20,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 4,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 20,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 81,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 20,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 20,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 20,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Data"
+  },
+  "22": {
+    "Address": 22,
+    "Width": 16,
+    "ResetValue": 4107,
+    "Value": 5474,
+    "IsReadOnly": false,
+    "RegisterBitsList": [
+      {
+        "Name": "en",
+        "Address": 22,
+        "BitBias": 0,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "mode",
+        "Address": 22,
+        "BitBias": 1,
+        "BitNum": 3,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "div",
+        "Address": 22,
+        "BitBias": 4,
+        "BitNum": 8,
+        "Value": 86,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "clk_sel",
+        "Address": 22,
+        "BitBias": 12,
+        "BitNum": 2,
+        "Value": 1,
+        "IsReadOnly": false
+      },
+      {
+        "Name": "ready",
+        "Address": 22,
+        "BitBias": 14,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      },
+      {
+        "Name": "err",
+        "Address": 22,
+        "BitBias": 15,
+        "BitNum": 1,
+        "Value": 0,
+        "IsReadOnly": true
+      }
+    ],
+    "Group": "Data"
+  }
+}
