@@ -34,14 +34,25 @@ function Invoke-GitHub([string]$method, [string]$path, $body = $null) {
         '-H', 'User-Agent: lantern-publish',
         '-H', 'Accept: application/vnd.github+json',
         '-X', $method)
+    $file = $null
     if ($null -ne $body) {
+        # A JSON string passed on the command line loses its quotes in PowerShell; a file does not.
+        $file = Join-Path ([IO.Path]::GetTempPath()) ('lantern-body-' + [guid]::NewGuid().ToString('N') + '.json')
+        [IO.File]::WriteAllText($file, ($body | ConvertTo-Json -Compress), (New-Object System.Text.UTF8Encoding($false)))
         $lines += @('-H', 'Content-Type: application/json')
-        $lines += @('--data-binary', ($body | ConvertTo-Json -Compress))
+        $lines += @('--data-binary', "@$file")
     }
     $lines += ($api + $path)
     $raw = & $curl @lines
+    if ($file -and (Test-Path $file)) { Remove-Item $file -Force -ErrorAction SilentlyContinue }
     if ($LASTEXITCODE -ne 0) { throw "curl failed: $method $path" }
     if (-not $raw) { return $null }
+
+    # GitHub answers a refusal with a message and no object: repeat it instead of failing silently.
+    if ($raw -notmatch '"id"\s*:' -and $raw -match '"message"\s*:\s*"([^"]+)"') {
+        throw ("GitHub refused " + $method + " " + $path + ": " + $matches[1])
+    }
+
     return $raw | ConvertFrom-Json
 }
 
