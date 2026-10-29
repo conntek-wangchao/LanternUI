@@ -19,8 +19,9 @@ public sealed class AboutPage : PageBase
         // state just does not get the rows.
         if (App is not DemoState state) return;
 
-        var version = GetType().Assembly.GetName().Version ?? new Version(1, 0, 0);
-        Add(Card(loc.T("Version"), null, Label(version.ToString(3)), out _, glyph: Glyphs.Info));
+        var version = BuildStamp.Version(GetType().Assembly);
+        var current = BuildStamp.Beta(GetType().Assembly);
+        Add(Card(loc.T("Version"), null, Label(UpdateVersion.Label(version, current)), out _, glyph: Glyphs.Info));
 
         // Editable: without a row here the only way to point the build at a channel was a command
         // line switch or hand-editing settings.json, and the page then said "no channel configured".
@@ -34,7 +35,10 @@ public sealed class AboutPage : PageBase
                 new Choice(loc.T("Stable"), UpdateChannel.Stable),
                 new Choice(loc.T("Beta"), UpdateChannel.Beta),
             },
-            () => S.Str("ui_update_channel"), value => S.Set("ui_update_channel", value), glyph: Glyphs.Folder);
+            // The control shows the track in force: a beta build with no setting follows beta, and the
+            // segmented control must say so instead of showing the first option.
+            () => UpdateChannel.FollowsBeta(S.Str("ui_update_channel"), current) ? UpdateChannel.Beta : UpdateChannel.Stable,
+            value => S.Set("ui_update_channel", value), glyph: Glyphs.Folder);
 
         var body = new StackPanel();
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
@@ -65,7 +69,7 @@ public sealed class AboutPage : PageBase
             var source = S.Str("ui_update_source").Trim();
             if (source.Length == 0) return null;
 
-            var beta = UpdateChannel.IsBeta(S.Str("ui_update_channel"));
+            var beta = UpdateChannel.FollowsBeta(S.Str("ui_update_channel"), BuildStamp.Beta(GetType().Assembly));
             return new UpdateService(UpdateChannel.Source(source, beta), work, version, 0, state.Sink, loc)
             {
                 AllowBeta = beta,

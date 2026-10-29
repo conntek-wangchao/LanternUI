@@ -46,6 +46,9 @@ $arguments = @(
     '-c', 'Release',
     '-o', $appDir,
     "-p:Version=$Version",
+    # The beta number rides on InformationalVersion: it is how a build knows it is a pre-release and
+    # stays on the beta track until someone chooses.
+    "-p:InformationalVersion=$(if ($Beta -gt 0) { "$Version-beta.$Beta" } else { "$Version" })",
     '--nologo', '-v', 'q'
 )
 

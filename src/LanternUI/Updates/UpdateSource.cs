@@ -15,7 +15,7 @@ public sealed record ReleaseInfo(
     DateTime Published)
 {
     /// <summary>The version with the beta suffix, as it is shown to a person.</summary>
-    public string Label => Beta > 0 ? Version + "-beta." + Beta : Version.ToString();
+    public string Label => UpdateVersion.Label(Version, Beta);
 
     /// <summary>Reads one release.json. A missing or malformed field is an error, not a silent default.</summary>
     public static ReleaseInfo Parse(JsonElement element)

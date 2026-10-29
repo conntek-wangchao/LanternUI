@@ -1,9 +1,9 @@
 {
-    "version":  "1.0.4",
+    "version":  "1.0.6",
     "beta":  0,
-    "notes":  "a download that stops half way now fails and starts over",
-    "package":  "https://github.com/conntek-wangchao/LanternUI/releases/download/v1.0.4/LanternUI-1.0.4-win-x64-self-contained-single.zip",
-    "sha256":  "465fb4db2ee7bb7bde93e4ce44210176dc245700498cdeb99f3d5c837db91d80",
-    "size":  66635939,
-    "published":  "2026-10-29T08:03:08Z"
+    "notes":  "stable track: beta/stable manifests, localised failures, plain network policy",
+    "package":  "https://github.com/conntek-wangchao/LanternUI/releases/download/v1.0.6/LanternUI-1.0.6-win-x64-self-contained-single.zip",
+    "sha256":  "ed1f293b01f356e31d442c584f0a80466247b4840dec68c4a65498a48ceb5585",
+    "size":  66634348,
+    "published":  "2026-10-29T09:07:40Z"
 }

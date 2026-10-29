@@ -46,4 +46,15 @@ public static class UpdateChannel
     /// <summary>Reads the track from a setting value; anything unknown is stable.</summary>
     public static bool IsBeta(string? setting) =>
         string.Equals((setting ?? "").Trim(), Beta, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Which track a build follows: the setting when it says something, otherwise the build itself —
+    /// a beta stays on beta until someone chooses, which is what the reference launcher does.
+    /// </summary>
+    public static bool FollowsBeta(string? setting, int currentBeta)
+    {
+        var chosen = (setting ?? "").Trim();
+        if (chosen.Length == 0) return currentBeta > 0;
+        return IsBeta(chosen);
+    }
 }

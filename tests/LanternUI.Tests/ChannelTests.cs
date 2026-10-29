@@ -41,6 +41,28 @@ public class ChannelTests
         Assert.False(UpdateChannel.IsBeta(null));
     }
 
+
+    [Fact]
+    public void A_build_follows_its_own_track_until_someone_chooses()
+    {
+        // No setting: a stable build stays stable, a beta build stays on beta (like the reference).
+        Assert.False(UpdateChannel.FollowsBeta("", 0));
+        Assert.True(UpdateChannel.FollowsBeta(null, 1));
+        Assert.True(UpdateChannel.FollowsBeta("   ", 3));
+
+        // An explicit choice wins over the build.
+        Assert.False(UpdateChannel.FollowsBeta("stable", 2));
+        Assert.True(UpdateChannel.FollowsBeta("beta", 0));
+    }
+
+    [Fact]
+    public void A_label_carries_the_beta_number()
+    {
+        Assert.Equal("1.0.5", UpdateVersion.Label(new Version(1, 0, 5), 0));
+        Assert.Equal("1.0.5", UpdateVersion.Label(new Version(1, 0, 5, 7), 0));
+        Assert.Equal("1.0.5-beta.1", UpdateVersion.Label(new Version(1, 0, 5), 1));
+    }
+
     [Fact]
     public async Task A_beta_release_is_not_offered_on_the_stable_track()
     {

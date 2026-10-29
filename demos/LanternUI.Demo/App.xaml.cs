@@ -65,6 +65,9 @@ public partial class App : Application
         var sourceAt = Array.IndexOf(args, "--update-source");
         if (sourceAt >= 0 && sourceAt + 1 < args.Length) state.Settings.Set("ui_update_source", args[sourceAt + 1]);
 
+        var trackAt = Array.IndexOf(args, "--update-channel");
+        if (trackAt >= 0 && trackAt + 1 < args.Length) state.Settings.Set("ui_update_channel", args[trackAt + 1]);
+
         // The log goes to a file as well as to the pane: a report from a user without the file is a
         // report nobody can act on. Two switches: the setting, and --no-log-file for a clean run.
         if (state.Settings.Bool("log_to_file") && !args.Contains("--no-log-file"))
@@ -242,10 +245,13 @@ public partial class App : Application
     private static UpdateService ChannelFor(DemoState state, string configPath, string source, ILocalizer localizer)
     {
         var work = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(configPath))!, "updates");
-        var current = typeof(App).Assembly.GetName().Version ?? new Version(1, 0, 0);
-        return new UpdateService(
-            source.Contains("://", StringComparison.Ordinal) ? new HttpUpdateSource(source) : new FolderUpdateSource(source),
-            work, current, 0, state.Sink, localizer);
+        var current = BuildStamp.Version(typeof(App).Assembly);
+        var beta = UpdateChannel.FollowsBeta(state.Settings.Str("ui_update_channel"), BuildStamp.Beta(typeof(App).Assembly));
+
+        return new UpdateService(UpdateChannel.Source(source, beta), work, current, 0, state.Sink, localizer)
+        {
+            AllowBeta = beta,
+        };
     }
 
     /// <summary>

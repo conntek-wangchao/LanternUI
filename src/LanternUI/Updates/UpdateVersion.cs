@@ -44,4 +44,8 @@ public static class UpdateVersion
 
     public static bool IsNewer(ReleaseInfo release, Version current, int currentBeta) =>
         Compare(release.Version, release.Beta, current, currentBeta) > 0;
+
+    /// <summary>What a person reads: "1.0.5" or "1.0.5-beta.1".</summary>
+    public static string Label(Version version, int beta) =>
+        beta <= 0 ? Normalize(version).ToString() : Normalize(version) + "-beta." + beta;
 }
