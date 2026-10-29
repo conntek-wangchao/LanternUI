@@ -126,12 +126,14 @@ public sealed class HttpUpdateSource : IUpdateSource
     private readonly Uri _manifest;
     private readonly TimeSpan _timeout;
     private HttpClient _client;
+    private HttpClient _direct;
 
     public HttpUpdateSource(string manifestUrl, TimeSpan? timeout = null)
     {
         _manifest = new Uri(manifestUrl, UriKind.Absolute);
         _timeout = timeout ?? TimeSpan.FromSeconds(60);
         _client = NewClient();
+        _direct = NewDirectClient();
     }
 
     private HttpClient NewClient()
@@ -141,12 +143,24 @@ public sealed class HttpUpdateSource : IUpdateSource
         return client;
     }
 
+    private HttpClient NewDirectClient()
+    {
+        var client = new HttpClient(Handler(direct: true)) { Timeout = _timeout };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("LanternUI");
+        return client;
+    }
+
     /// <summary>The message plus whatever the transport said inside it.</summary>
     private static string Describe(Exception e)
     {
         var text = e.Message;
         for (var inner = e.InnerException; inner != null; inner = inner.InnerException)
-            text += " (" + inner.Message + ")";
+        {
+            // The transport often repeats the outer text; saying it twice helps nobody.
+            if (inner.Message.Length > 0 && !text.Contains(inner.Message, StringComparison.Ordinal))
+                text += " (" + inner.Message + ")";
+        }
+
         return text;
     }
 
@@ -154,8 +168,9 @@ public sealed class HttpUpdateSource : IUpdateSource
 
     public string? LastError { get; private set; }
 
-    private static SocketsHttpHandler Handler() => new()
+    private static SocketsHttpHandler Handler(bool direct = false) => new()
     {
+        UseProxy = !direct,
         ConnectTimeout = TimeSpan.FromSeconds(10),
         ConnectCallback = async (context, token) =>
         {
@@ -192,29 +207,32 @@ public sealed class HttpUpdateSource : IUpdateSource
     {
         LastError = null;
 
-        // Two attempts: a channel on the far side of a flaky route fails once and answers the next
-        // time often enough that one retry turns a red line into a normal check.
-        for (var attempt = 0; attempt < 2; attempt++)
+        // The system proxy first, then a direct connection: a machine whose proxy is switched off but
+        // still configured would otherwise fail every check even where the channel is reachable.
+        foreach (var client in new[] { _client, _direct })
         {
-            try
+            for (var attempt = 0; attempt < 2; attempt++)
             {
-                var json = await _client.GetStringAsync(_manifest, token).ConfigureAwait(false);
-                using var document = JsonDocument.Parse(json);
-                return ReleaseInfo.Parse(document.RootElement);
-            }
-            catch (Exception e) when (e is HttpRequestException or JsonException or FormatException or TaskCanceledException)
-            {
-                // Remembered, not swallowed: "could not reach the channel" and "nothing published"
-                // are different answers and the window must not confuse them.
-                LastError = Describe(e);
-                if (attempt == 0 && e is not JsonException and not FormatException)
+                try
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(600), token).ConfigureAwait(false);
-                    continue;
+                    var json = await client.GetStringAsync(_manifest, token).ConfigureAwait(false);
+                    using var document = JsonDocument.Parse(json);
+                    return ReleaseInfo.Parse(document.RootElement);
                 }
-            }
+                catch (Exception e) when (e is HttpRequestException or JsonException or FormatException or TaskCanceledException)
+                {
+                    // Remembered, not swallowed: "could not reach the channel" and "nothing published"
+                    // are different answers and the window must not confuse them.
+                    LastError = Describe(e);
+                    if (attempt == 0 && e is not JsonException and not FormatException)
+                    {
+                        await Task.Delay(TimeSpan.FromMilliseconds(400), token).ConfigureAwait(false);
+                        continue;
+                    }
+                }
 
-            break;
+                break;
+            }
         }
 
         return null;
@@ -225,25 +243,42 @@ public sealed class HttpUpdateSource : IUpdateSource
         var address = new Uri(_manifest, release.PackageUrl);
         Exception? last = null;
 
-        // Three attempts, and each one after a failure gets a fresh pool: the usual cause is a socket
-        // the far end or the proxy closed between two requests, which shows up as an SSL handshake
-        // error on the *next* request and then works when the connection is new.
-        for (var attempt = 0; attempt < 3; attempt++)
+        // Each failure retries on a fresh pool, and the second round goes out without the proxy: an
+        // SSL error is usually a socket the far end already dropped, and a dead proxy is a dead end.
+        foreach (var useProxy in new[] { true, false })
         {
-            try
+            for (var attempt = 0; attempt < 3; attempt++)
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, address);
-                request.Headers.Accept.ParseAdd("application/octet-stream");
-                var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-            }
-            catch (Exception e) when ((e is HttpRequestException or IOException or TaskCanceledException) && attempt < 2)
-            {
-                last = e;
-                _client.Dispose();
-                _client = NewClient();
-                await Task.Delay(TimeSpan.FromMilliseconds(500 * (attempt + 1)), token).ConfigureAwait(false);
+                try
+                {
+                    using var request = new HttpRequestMessage(HttpMethod.Get, address);
+                    request.Headers.Accept.ParseAdd("application/octet-stream");
+                    var response = await (useProxy ? _client : _direct)
+                        .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
+                    return await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
+                }
+                catch (Exception e) when ((e is HttpRequestException or IOException or TaskCanceledException) && attempt < 2)
+                {
+                    last = e;
+                    if (useProxy)
+                    {
+                        _client.Dispose();
+                        _client = NewClient();
+                    }
+                    else
+                    {
+                        _direct.Dispose();
+                        _direct = NewDirectClient();
+                    }
+
+                    await Task.Delay(TimeSpan.FromMilliseconds(500 * (attempt + 1)), token).ConfigureAwait(false);
+                }
+                catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException)
+                {
+                    last = e;
+                    break;
+                }
             }
         }
 

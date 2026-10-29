@@ -1,9 +1,9 @@
 {
-    "version":  "1.0.2",
+    "version":  "1.0.3",
     "beta":  0,
-    "notes":  "download progress bar, retried downloads, IPv4-first channel lookup",
-    "package":  "https://github.com/conntek-wangchao/LanternUI/releases/download/v1.0.2/LanternUI-1.0.2-win-x64-self-contained-single.zip",
-    "sha256":  "49e43f0854568ab4df0bd32ea2d1da1598f6dacd1ce32d9c62ff97721218754d",
-    "size":  66634451,
-    "published":  "2026-10-29T07:31:24Z"
+    "notes":  "direct fallback when the proxy is off, one message per failure",
+    "package":  "https://github.com/conntek-wangchao/LanternUI/releases/download/v1.0.3/LanternUI-1.0.3-win-x64-self-contained-single.zip",
+    "sha256":  "cfd623972e59db92693fac4d6e7bcf2b751441b3b8a0051fe0ab4fbbaea59211",
+    "size":  66634705,
+    "published":  "2026-10-29T07:42:47Z"
 }

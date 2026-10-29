@@ -105,12 +105,28 @@ try {
     $zip = Join-Path $releaseDir $manifest.package
 
     $tag = "v$Version"
-    $release = Invoke-GitHub 'POST' "/repos/$Owner/$Repo/releases" @{
-        tag_name = $tag
-        name     = $Version
-        body     = $(if ($Notes) { $Notes } else { "LanternUI $Version" })
+    $release = $null
+    try { $release = Invoke-GitHub 'GET' "/repos/$Owner/$Repo/releases/tags/$tag" } catch { $release = $null }
+    if ($release) {
+        "release $tag exists (id $($release.id)): reusing it"
+    }
+    else {
+        $release = Invoke-GitHub 'POST' "/repos/$Owner/$Repo/releases" @{
+            tag_name = $tag
+            name     = $Version
+            body     = $(if ($Notes) { $Notes } else { "LanternUI $Version" })
+        }
+        "release $tag created (id $($release.id))"
     }
     $uploadBase = "https://uploads.github.com/repos/$Owner/$Repo/releases/$($release.id)/assets"
+
+    $existingAssets = Invoke-GitHub 'GET' "/repos/$Owner/$Repo/releases/$($release.id)/assets"
+    foreach ($old in @($existingAssets)) {
+        if ($old -and $old.name -eq $manifest.package) {
+            Invoke-GitHub 'DELETE' "/repos/$Owner/$Repo/releases/assets/$($old.id)" | Out-Null
+            "removed the previous $($old.name)"
+        }
+    }
 
     $assetJson = Send-Asset $uploadBase $zip $manifest.package
     $asset = $assetJson | ConvertFrom-Json
@@ -136,7 +152,9 @@ try {
         sha256    = $manifest.sha256
         size      = $manifest.size
         published = $manifest.published
-    } | ConvertTo-Json | Set-Content (Join-Path $channelDir 'release.json') -Encoding UTF8
+    } | ConvertTo-Json | ForEach-Object {
+        [IO.File]::WriteAllText((Join-Path $channelDir 'release.json'), $_, (New-Object System.Text.UTF8Encoding($false)))
+    }
 
     & $git add 'channel/release.json'
     & $git @('-c', 'user.name=publish', '-c', 'user.email=publish@local') commit -q -m "channel: $Version"
