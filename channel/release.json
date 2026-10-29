@@ -1,0 +1,9 @@
+﻿{
+    "version":  "1.0.1",
+    "beta":  0,
+    "notes":  "first public build: framework, demo, self-update, charts, register table",
+    "package":  "https://github.com/conntek-wangchao/LanternUI/releases/download/v1.0.1/LanternUI-1.0.1-win-x64-self-contained-single.zip",
+    "sha256":  "ceb8f198fc30259768c511c2e8a33c0148bfa7a45df45a0f6b6440a359f0ebca",
+    "size":  66630760,
+    "published":  "2026-10-29T06:31:56Z"
+}
