@@ -1,5 +1,8 @@
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text.Json;
 
 namespace Lantern.UI;
@@ -121,42 +124,129 @@ public sealed class FolderUpdateSource : IUpdateSource
 public sealed class HttpUpdateSource : IUpdateSource
 {
     private readonly Uri _manifest;
-    private readonly HttpClient _client;
+    private readonly TimeSpan _timeout;
+    private HttpClient _client;
 
     public HttpUpdateSource(string manifestUrl, TimeSpan? timeout = null)
     {
         _manifest = new Uri(manifestUrl, UriKind.Absolute);
-        _client = new HttpClient { Timeout = timeout ?? TimeSpan.FromSeconds(30) };
-        _client.DefaultRequestHeaders.UserAgent.ParseAdd("LanternUI");
+        _timeout = timeout ?? TimeSpan.FromSeconds(60);
+        _client = NewClient();
+    }
+
+    private HttpClient NewClient()
+    {
+        var client = new HttpClient(Handler()) { Timeout = _timeout };
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("LanternUI");
+        return client;
+    }
+
+    /// <summary>The message plus whatever the transport said inside it.</summary>
+    private static string Describe(Exception e)
+    {
+        var text = e.Message;
+        for (var inner = e.InnerException; inner != null; inner = inner.InnerException)
+            text += " (" + inner.Message + ")";
+        return text;
     }
 
     public string Description => _manifest.ToString();
 
     public string? LastError { get; private set; }
 
+    private static SocketsHttpHandler Handler() => new()
+    {
+        ConnectTimeout = TimeSpan.FromSeconds(10),
+        ConnectCallback = async (context, token) =>
+        {
+            var addresses = await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, token).ConfigureAwait(false);
+            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+            try
+            {
+                // IPv4 first: a host that advertises AAAA while the machine has no IPv6 route would
+                // otherwise sit in connect until the timeout expires.
+                foreach (var address in addresses.OrderBy(a => a.AddressFamily == AddressFamily.InterNetwork ? 0 : 1))
+                {
+                    try
+                    {
+                        await socket.ConnectAsync(new IPEndPoint(address, context.DnsEndPoint.Port), token).ConfigureAwait(false);
+                        return new NetworkStream(socket, ownsSocket: true);
+                    }
+                    catch (SocketException)
+                    {
+                        // try the next address
+                    }
+                }
+
+                throw new HttpRequestException("no address of " + context.DnsEndPoint.Host + " could be reached");
+            }
+            catch
+            {
+                socket.Dispose();
+                throw;
+            }
+        },
+    };
+
     public async Task<ReleaseInfo?> CheckAsync(CancellationToken token = default)
     {
         LastError = null;
-        try
+
+        // Two attempts: a channel on the far side of a flaky route fails once and answers the next
+        // time often enough that one retry turns a red line into a normal check.
+        for (var attempt = 0; attempt < 2; attempt++)
         {
-            var json = await _client.GetStringAsync(_manifest, token).ConfigureAwait(false);
-            using var document = JsonDocument.Parse(json);
-            return ReleaseInfo.Parse(document.RootElement);
+            try
+            {
+                var json = await _client.GetStringAsync(_manifest, token).ConfigureAwait(false);
+                using var document = JsonDocument.Parse(json);
+                return ReleaseInfo.Parse(document.RootElement);
+            }
+            catch (Exception e) when (e is HttpRequestException or JsonException or FormatException or TaskCanceledException)
+            {
+                // Remembered, not swallowed: "could not reach the channel" and "nothing published"
+                // are different answers and the window must not confuse them.
+                LastError = Describe(e);
+                if (attempt == 0 && e is not JsonException and not FormatException)
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(600), token).ConfigureAwait(false);
+                    continue;
+                }
+            }
+
+            break;
         }
-        catch (Exception e) when (e is HttpRequestException or JsonException or FormatException or TaskCanceledException)
-        {
-            // Remembered, not swallowed: "could not reach the channel" and "nothing published" are
-            // different answers and the window must not confuse them.
-            LastError = e.Message;
-            return null;
-        }
+
+        return null;
     }
 
     public async Task<Stream> OpenPackageAsync(ReleaseInfo release, CancellationToken token = default)
     {
         var address = new Uri(_manifest, release.PackageUrl);
-        var response = await _client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-        return await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
+        Exception? last = null;
+
+        // Three attempts, and each one after a failure gets a fresh pool: the usual cause is a socket
+        // the far end or the proxy closed between two requests, which shows up as an SSL handshake
+        // error on the *next* request and then works when the connection is new.
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, address);
+                request.Headers.Accept.ParseAdd("application/octet-stream");
+                var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
+            }
+            catch (Exception e) when ((e is HttpRequestException or IOException or TaskCanceledException) && attempt < 2)
+            {
+                last = e;
+                _client.Dispose();
+                _client = NewClient();
+                await Task.Delay(TimeSpan.FromMilliseconds(500 * (attempt + 1)), token).ConfigureAwait(false);
+            }
+        }
+
+        throw new HttpRequestException(Describe(last!), last);
     }
 }

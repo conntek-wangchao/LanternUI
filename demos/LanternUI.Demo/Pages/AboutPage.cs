@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,7 +28,19 @@ public sealed class AboutPage : PageBase
             loc.T(@"For example D:\releases"), () => S.Str("ui_update_source"),
             value => S.Set("ui_update_source", value), glyph: Glyphs.Folder, width: 420);
 
+        var body = new StackPanel();
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
+        var bar = new ProgressBar
+        {
+            Minimum = 0,
+            Maximum = 100,
+            Value = 0,
+            Width = 260,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Margin = new Thickness(0, 8, 0, 0),
+            Visibility = Visibility.Collapsed,
+        };
+        bar.SetResourceReference(StyleProperty, "Progress");
         var check = new Button { Content = loc.T("Check now"), Padding = new Thickness(12, 4, 12, 4), Margin = new Thickness(0, 0, 8, 0) };
         check.SetResourceReference(StyleProperty, "GhostButton");
         var install = new Button { Content = loc.T("Install"), Padding = new Thickness(12, 4, 12, 4), Visibility = Visibility.Collapsed };
@@ -45,9 +58,23 @@ public sealed class AboutPage : PageBase
             return source.Length == 0 ? null : new UpdateService(Channel(source), work, version, 0, state.Sink, loc);
         }
 
+        body.Children.Add(buttons);
+        body.Children.Add(bar);
         Add(Card(loc.T("Updates"), loc.T("Checks the channel and stages a package that matches its sha256."),
-            buttons, out var status, wide: true, glyph: Glyphs.Save));
+            body, out var status, wide: true, glyph: Glyphs.Save));
         SetHint(status, Service() == null ? loc.T("No update channel is configured.") : "");
+
+        // The screenshots in the docs need the row as it looks mid-download, which no unattended
+        // render can reach. LANTERN_DEMO_PROGRESS=<percent> fills the bar for that one picture.
+        if (Environment.GetEnvironmentVariable("LANTERN_DEMO_PROGRESS") is { Length: > 0 } demo &&
+            double.TryParse(demo, NumberStyles.Float, CultureInfo.InvariantCulture, out var filled))
+        {
+            bar.Value = Math.Clamp(filled, 0, 100);
+            bar.Visibility = Visibility.Visible;
+            var percentText = Math.Floor(bar.Value).ToString(CultureInfo.InvariantCulture);
+            const string megabytes = "63.5";
+            SetHint(status, loc.F($"Downloading {version.ToString(3)}... {percentText}% of {megabytes} MB"));
+        }
 
         check.Click += async (_, _) =>
         {
@@ -97,14 +124,46 @@ public sealed class AboutPage : PageBase
             install.IsEnabled = false;
             try
             {
+                bar.Value = 0;
+                bar.Visibility = Visibility.Visible;
                 SetHint(status, loc.F($"Downloading {release.Label}..."));
-                var result = await service.DownloadAsync(release);
+
+                // The service reports on whatever thread copied the file; the bar belongs to the UI one.
+                void Progress(long received, long total)
+                {
+                    var percent = total > 0 ? Math.Clamp(received * 100.0 / total, 0, 100) : 0;
+                    var percentText = Math.Floor(percent).ToString(CultureInfo.InvariantCulture);
+                    var megabytes = ((total > 0 ? total : received) / 1048576.0)
+                        .ToString("0.#", CultureInfo.InvariantCulture);
+
+                    Dispatcher.BeginInvoke(() =>
+                    {
+                        bar.Value = percent;
+                        SetHint(status, total > 0
+                            ? loc.F($"Downloading {release.Label}... {percentText}% of {megabytes} MB")
+                            : loc.F($"Downloading {release.Label}... {megabytes} MB"));
+                    });
+                }
+
+                service.DownloadProgress += Progress;
+                UpdateResult result;
+                try
+                {
+                    result = await service.DownloadAsync(release);
+                }
+                finally
+                {
+                    service.DownloadProgress -= Progress;
+                }
+
                 if (!result.Ok)
                 {
+                    bar.Visibility = Visibility.Collapsed;
                     SetHint(status, loc.F($"Download refused: {result.Message}"));
                     return;
                 }
 
+                bar.Visibility = Visibility.Collapsed;
                 SetHint(status, loc.F($"Ready to install {release.Label}."));
                 if (!Prompt.Confirm(loc.T("Update ready"), loc.F($"Install {release.Label} now? The application restarts."),
                         loc.T("Restart now"), loc.T("Later"))) return;

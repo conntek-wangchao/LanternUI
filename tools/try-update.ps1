@@ -12,6 +12,8 @@ param(
     [string]$From = "release-1.0.0",
     [string]$To = "release-1.0.1",
     [string]$Sandbox = "sandbox",
+    # Where the update comes from: a folder next to this repo, or a full URL to release.json.
+    [string]$Channel = "",
     [switch]$Fresh,
     [switch]$Tamper,
     [switch]$UiTest
@@ -63,13 +65,14 @@ if ($Fresh -or -not (Test-Path $exe)) {
 
 if ($UiTest) {
     # Stop here: the rest is what the window's About page does.
+    $target = if ($Channel) { $Channel } else { $toDir }
     $settings = Get-Content $config -Raw | ConvertFrom-Json
-    $settings | Add-Member -NotePropertyName ui_update_source -NotePropertyValue $toDir -Force
+    $settings | Add-Member -NotePropertyName ui_update_source -NotePropertyValue $target -Force
     $settings | ConvertTo-Json | Set-Content $config -Encoding UTF8
     ''
     'ready for the window test:'
     "  run  $exe"
-    '  About page -> Update channel is already filled with ' + $toDir
+    '  About page -> Update channel is already filled with ' + $target
     '  press "Check now", then "Install 1.0.1 ..." and confirm the restart'
     ''
     return

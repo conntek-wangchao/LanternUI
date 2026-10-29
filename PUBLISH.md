@@ -1,73 +1,75 @@
-# 发布到 GitHub（含联网更新通道）
+# 已发布：conntek-wangchao/LanternUI
 
-## 这台机器的现实情况（2026-10-29 实测）
+## 现在的事实（2026-10-29 实测通过）
 
-| 项 | 结果 |
+| 项 | 地址 / 结果 |
 |---|---|
-| `https://api.github.com` | 直连 **200** 可用 |
-| `https://github.com` | 直连超时；**必须走代理** `http://127.0.0.1:7897`（经代理 200） |
-| 账号 `conntek-wangchao` | 存在，1 个公开仓库 `deepseek-harness` |
-| 已保存的 GitHub 凭据 | 只有 `pureskywalk` 的 OAuth 令牌（Git Credential Manager），**不能**在 `conntek-wangchao` 下建仓库 |
-| `gh` CLI | 未安装 |
+| 仓库 | https://github.com/conntek-wangchao/LanternUI （public，默认分支 main） |
+| 首个提交 | e3912e8 — 框架 + 示例 + 工具，106 个文件 / 1.4 MB（bin、obj、shots、release-*、sandbox、tmp 全部忽略） |
+| 发布 | https://github.com/conntek-wangchao/LanternUI/releases/tag/v1.0.1 |
+| 资产 | LanternUI-1.0.1-win-x64-self-contained-single.zip（63.5 MB）与 release.json |
+| 更新通道 | https://raw.githubusercontent.com/conntek-wangchao/LanternUI/main/channel/release.json |
+| 通道提交 | 5b899a5 — channel/release.json（package 指向 Release 资产） |
 
-所以要发布到 `conntek-wangchao`，需要该账号的一个 **classic PAT（scope: `repo`）**。
-令牌放在环境变量里，不要写进文件或命令行参数：
+## 联网更新的实测结果
 
-```powershell
-# 你自己的终端里执行一次（不影响聊天记录）
-setx GH_TOKEN "<粘贴 PAT>"
-```
+把一份 1.0.0 装在沙箱里，通道指向上面那个 raw 地址：
 
-新开的进程会继承它；之后我或你运行下面这条即可。
+~~~
+check exit=0                      <- 读到清单：1.0.1 is available
+download exit=0                   <- 从 Release 资产下载 63.5 MB，size + sha256 校验通过，已暂存
+start  exit=0                     <- 落地
+installed: 1.0.0.0 -> 1.0.1.0
+log: update: downloading https://github.com/.../releases/download/v1.0.1/....zip
+     update: 1.0.1 is ready to install
+     update: LanternUI.Demo.exe
+~~~
 
-## 一条命令发布
+## 这台机器的网络注意事项（重要）
 
-```powershell
-tools\publish-github.ps1 -Owner conntek-wangchao -Repo LanternUI -Version 1.0.1 -CreateRepo -PushSource
-```
+| 目标 | 直连 | 走代理 127.0.0.1:7897 |
+|---|---|---|
+| api.github.com | 200 | 200 |
+| github.com | 超时 | 200 |
+| raw.githubusercontent.com | 200 | 200 |
+| uploads.github.com（传资产） | 201，必须直连 | 000 |
 
-它按顺序做：
+所以：
 
-1. 校验令牌并打印它属于谁（防止用错账号）
-2. `-CreateRepo`：`POST /user/repos` 建仓库（已存在会告警后继续）
-3. `-PushSource`：`git init` / commit / push（经代理，令牌只放在本次请求头里，不写进 `.git/config`）
-4. `tools\pack.ps1` 打出 self-contained 单文件包
-5. 建 Release，上传 zip 与 `release.json` 两个资产
-6. 生成 `channel\release.json`（`package` 用**资产的绝对 URL**），提交并推送
-7. 打印更新通道地址
+- git push 要带 -c http.proxy=http://127.0.0.1:7897
+- 上传 Release 资产要直连（tools/publish-github.ps1 的 -UploadProxy 默认留空即直连）
+- 应用自己联网更新时，进程需要 HTTPS_PROXY（.NET 的 HttpClient 认这个变量）：
 
-## 更新通道就是那个文件
+~~~
+$env:HTTPS_PROXY = 'http://127.0.0.1:7897'
+$env:HTTP_PROXY  = 'http://127.0.0.1:7897'
+sandbox\install\LanternUI.Demo.exe      # 关于 -> 更新通道填 raw 地址 -> 立即检查
+~~~
 
-发布完成后通道是：
+不加这两个变量时，检查清单（raw）仍能通过，但下载资产会失败（github.com 直连不通），
+提示行会显示 下载被拒绝：...
 
-```
-https://raw.githubusercontent.com/conntek-wangchao/LanternUI/main/channel/release.json
-```
+## 怎么发下一个版本
 
-应用里「关于 → 更新通道」填这个地址，或在命令行：
+~~~
+$env:GH_TOKEN = '<classic PAT, repo scope>'
+tools\publish-github.ps1 -Owner conntek-wangchao -Repo LanternUI -Version 1.0.2 -Notes "what changed"
+~~~
 
-```powershell
-LanternUI.Demo.exe --update-source https://raw.githubusercontent.com/conntek-wangchao/LanternUI/main/channel/release.json --check-updates
-```
+它会：打包 -> 建 v1.0.2 Release -> 上传 zip 与 release.json -> 更新并推送 channel/release.json。
+重复发布会复用已存在的资产，不会报错。
 
-注意：`raw.githubusercontent.com` 有缓存，发新版后如果客户端还读到旧的清单，把通道改成
-`.../channel/release.json?v=1.0.1`（查询串一变就绕过缓存）。
+## 安全
 
-## 仓库里有什么
+- 这次使用的 classic PAT 出现在聊天记录里，请立刻到 GitHub -> Settings -> Developer settings ->
+  Tokens (classic) 把它 Revoke 掉，需要时再生成新的（只勾 repo）。
+- 令牌只存在于环境变量与本次请求头里，没有写进 .git/config，也没有提交进仓库。
 
-| 路径 | 作用 |
+## 还没做
+
+| 项 | 说明 |
 |---|---|
-| `src/\`、`demos/\`、`tests/\` | 框架、示例、测试 |
-| `tools/pack.ps1` | 打包（三种模式） |
-| `tools/publish-github.ps1` | 本文件描述的一键发布 |
-| `tools/try-update.ps1` | 本机验证更新链路 |
-| `channel/release.json` | 更新通道（发布脚本自动维护） |
-| `check.ps1` / `check-i18n.ps1` | 质量门禁（构建 + 测试 + 本地化） |
-
-`release-*/\` 与 `sandbox/\` 已在 `.gitignore` 里，不会被推上去。
-
-## 之后可以让 CI 接管
-
-`.github/workflows/release.yml`（还没写）可以在打 tag `v*` 时自动：
-构建 → 测试 → `pack.ps1` → 建 Release 上传资产 → 更新 `channel/release.json`。
-用仓库自带的 `GITHUB_TOKEN` 即可，不需要个人令牌。要我加就说一声。
+| 清单签名 | 现在信任链是 HTTPS + 你的账号；频道被接管仍可推恶意包 |
+| CI 自动发布 | 加 .github/workflows/release.yml，打 tag 时自动打包上传（用仓库自带 GITHUB_TOKEN，不需要个人令牌） |
+| 资产上传走代理 | 若以后网络必须代理才能上传，需要给 uploads.github.com 单独配隧道 |
+| 下载进度 / 断点续传 | 63.5 MB 全量包，慢网只有一行"正在下载…" |

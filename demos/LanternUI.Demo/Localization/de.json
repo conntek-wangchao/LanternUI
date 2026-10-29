@@ -241,5 +241,7 @@
   "registers.unfold_group": "Gruppe entfalten",
   "registers.group_0": "Gruppe {0}",
   "registers.0_registers": "{0} Register",
-  "updates.for_example_d_releases": "Zum Beispiel D:\\releases"
+  "updates.for_example_d_releases": "Zum Beispiel D:\\releases",
+  "updates.downloading_0_1_of_2_mb": "Lädt {0}… {1} % von {2} MB",
+  "updates.downloading_0_1_mb": "Lädt {0}… {1} MB"
 }

@@ -11,6 +11,8 @@ param(
     [string]$Version = "1.0.0",
     [string]$Token = $env:GH_TOKEN,
     [string]$Proxy = "http://127.0.0.1:7897",
+    # Uploads go to uploads.github.com, which on some networks only answers without the proxy.
+    [string]$UploadProxy = "",
     [string]$Branch = "main",
     [string]$Visibility = "public",
     [string]$Notes = "",
@@ -44,13 +46,16 @@ function Invoke-GitHub([string]$method, [string]$path, $body = $null) {
 }
 
 function Send-Asset([string]$uploadBase, [string]$file, [string]$name) {
-    $lines = @('-s', '-S', '--max-time', '900', '-x', $Proxy,
-        '-H', "Authorization: Bearer $Token",
-        '-H', 'User-Agent: lantern-publish',
+    $lines = @('-s', '-S', '--max-time', '900')
+    if ($UploadProxy) { $lines += @('-x', $UploadProxy) }
+    $lines += @('-H', "Authorization: Bearer $Token",
+        '-H', 'User-Agent: lantern-publish',            # keep the header list in one piece
         '-H', 'Content-Type: application/octet-stream',
         '--data-binary', "@$file",
         "$uploadBase?name=$([uri]::EscapeDataString($name))")
-    return (& $curl @lines)
+    $raw = & $curl @lines
+    if ($LASTEXITCODE -ne 0) { return $null }
+    return $raw
 }
 
 $me = Invoke-GitHub 'GET' '/user'
@@ -97,9 +102,16 @@ try {
     $uploadBase = "https://uploads.github.com/repos/$Owner/$Repo/releases/$($release.id)/assets"
 
     $assetJson = Send-Asset $uploadBase $zip $manifest.package
-    $packageUrl = ($assetJson | ConvertFrom-Json).browser_download_url
+    $asset = $assetJson | ConvertFrom-Json
+    $packageUrl = $asset.browser_download_url
+    if (-not $packageUrl) {
+        # Re-running a publish must not fail because the asset is already on the release.
+        $existing = (Invoke-GitHub 'GET' "/repos/$Owner/$Repo/releases/$($release.id)/assets" |
+            Where-Object { $_.name -eq $manifest.package } | Select-Object -First 1)
+        $packageUrl = if ($existing) { $existing.browser_download_url } else { $null }
+    }
     if (-not $packageUrl) { throw "asset upload failed: $assetJson" }
-    "asset uploaded: $($manifest.package)"
+    "asset: $packageUrl"
 
     Send-Asset $uploadBase (Join-Path $releaseDir 'release.json') 'release.json' | Out-Null
 

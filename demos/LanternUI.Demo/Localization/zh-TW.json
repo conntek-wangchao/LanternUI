@@ -241,5 +241,7 @@
   "registers.unfold_group": "展開分組",
   "registers.group_0": "分組 {0}",
   "registers.0_registers": "{0} 個暫存器",
-  "updates.for_example_d_releases": "例如 D:\\releases"
+  "updates.for_example_d_releases": "例如 D:\\releases",
+  "updates.downloading_0_1_of_2_mb": "正在下載 {0}… {1}%（共 {2} MB）",
+  "updates.downloading_0_1_mb": "正在下載 {0}… {1} MB"
 }

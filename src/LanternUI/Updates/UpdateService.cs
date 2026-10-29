@@ -60,6 +60,9 @@ public sealed class UpdateService
 
     public event Action<UpdateStage>? StageChanged;
 
+    /// <summary>Bytes received and the expected total (-1 when the manifest did not say).</summary>
+    public event Action<long, long>? DownloadProgress;
+
     /// <summary>Asks the source; returns the release only when it is newer than this build.</summary>
     public async Task<ReleaseInfo?> CheckAsync(CancellationToken token = default)
     {
@@ -111,7 +114,7 @@ public sealed class UpdateService
 
             await using (var input = await Source.OpenPackageAsync(release, token).ConfigureAwait(false))
             await using (var output = File.Create(file))
-                await input.CopyToAsync(output, token).ConfigureAwait(false);
+                await CopyAsync(input, output, release.Size, token).ConfigureAwait(false);
 
             Set(UpdateStage.Verifying);
             var size = new FileInfo(file).Length;
@@ -143,6 +146,33 @@ public sealed class UpdateService
         {
             return Stop(e.Message);
         }
+    }
+
+    /// <summary>Copies in chunks and reports how far it got; the last report is always the final size.</summary>
+    private async Task CopyAsync(Stream input, Stream output, long expected, CancellationToken token)
+    {
+        var buffer = new byte[81920];
+        long received = 0;
+        var total = expected > 0 ? expected : -1;
+        var lastReport = Environment.TickCount64;
+
+        DownloadProgress?.Invoke(0, total);
+
+        int read;
+        while ((read = await input.ReadAsync(buffer.AsMemory(), token).ConfigureAwait(false)) > 0)
+        {
+            await output.WriteAsync(buffer.AsMemory(0, read), token).ConfigureAwait(false);
+            received += read;
+
+            // Four times a second is enough for a number and a bar to look live, and it keeps the
+            // dispatcher free while sixty megabytes stream past.
+            var now = Environment.TickCount64;
+            if (now - lastReport < 250) continue;
+            lastReport = now;
+            DownloadProgress?.Invoke(received, total);
+        }
+
+        DownloadProgress?.Invoke(received, total);
     }
 
     public PendingUpdate? Pending() => UpdateApplier.ReadPending(WorkDirectory);
