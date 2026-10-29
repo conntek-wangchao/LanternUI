@@ -2,6 +2,7 @@
   "pages": {
     "about": [
       "Version",
+      "Channel address",
       "Update channel",
       "Updates",
       "Toggle row",

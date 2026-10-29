@@ -243,5 +243,13 @@
   "registers.0_registers": "{0} Register",
   "updates.for_example_d_releases": "Zum Beispiel D:\\releases",
   "updates.downloading_0_1_of_2_mb": "Lädt {0}… {1} % von {2} MB",
-  "updates.downloading_0_1_mb": "Lädt {0}… {1} MB"
+  "updates.downloading_0_1_mb": "Lädt {0}… {1} MB",
+  "updates.the_download_failed": "Der Download ist fehlgeschlagen.",
+  "updates.the_package_is_0_bytes_not_the_1_the_channel_promi": "Das Paket hat {0} Bytes statt der im Kanal angegebenen {1}.",
+  "updates.the_package_does_not_match_the_sha256_in_the_chann": "Das Paket passt nicht zum sha256 des Kanals.",
+  "updates.channel_address": "Kanaladresse",
+  "updates.stable": "Stabil",
+  "updates.beta": "Beta",
+  "updates.stable_follows_finished_releases_beta_also_takes": "Stabil folgt fertigen Veröffentlichungen, Beta nimmt auch Vorabversionen.",
+  "updates.this_release_is_a_beta_and_the_channel_is_set_to_st": "Diese Veröffentlichung ist eine Beta, der Kanal steht auf stabil."
 }

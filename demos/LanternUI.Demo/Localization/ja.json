@@ -243,5 +243,13 @@
   "registers.0_registers": "{0} 個のレジスタ",
   "updates.for_example_d_releases": "例: D:\\releases",
   "updates.downloading_0_1_of_2_mb": "ダウンロード中 {0}… {1}%（{2} MB）",
-  "updates.downloading_0_1_mb": "ダウンロード中 {0}… {1} MB"
+  "updates.downloading_0_1_mb": "ダウンロード中 {0}… {1} MB",
+  "updates.the_download_failed": "ダウンロードに失敗しました。",
+  "updates.the_package_is_0_bytes_not_the_1_the_channel_promi": "パッケージは {0} バイトで、チャネルの {1} バイトと一致しません。",
+  "updates.the_package_does_not_match_the_sha256_in_the_chann": "パッケージがチャネルの sha256 と一致しません。",
+  "updates.channel_address": "チャネルのアドレス",
+  "updates.stable": "安定版",
+  "updates.beta": "ベータ",
+  "updates.stable_follows_finished_releases_beta_also_takes": "安定版は正式リリースのみ、ベータはプレリリースも受け取ります。",
+  "updates.this_release_is_a_beta_and_the_channel_is_set_to_st": "このリリースはベータですが、チャネルは安定版です。"
 }

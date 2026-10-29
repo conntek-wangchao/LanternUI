@@ -1,8 +1,5 @@
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Text.Json;
 
 namespace Lantern.UI;
@@ -28,8 +25,14 @@ public sealed record ReleaseInfo(
         var version = Text(element, "version") ?? throw new FormatException("release.json has no version");
         var package = Text(element, "package") ?? throw new FormatException("release.json has no package");
 
+        // beta is written as a number by the packaging script and as a string by hand; both count.
         var beta = 0;
-        if (Text(element, "beta") is { } betaText && !int.TryParse(betaText, out beta)) beta = 0;
+        if (element.TryGetProperty("beta", out var betaElement))
+        {
+            if (betaElement.ValueKind == JsonValueKind.Number && !betaElement.TryGetInt32(out beta)) beta = 0;
+            else if (betaElement.ValueKind == JsonValueKind.String &&
+                     !int.TryParse(betaElement.GetString(), out beta)) beta = 0;
+        }
 
         long size = 0;
         if (element.TryGetProperty("size", out var sizeElement) && sizeElement.ValueKind == JsonValueKind.Number)
@@ -65,12 +68,6 @@ public interface IUpdateSource
 
     /// <summary>What this source is, for the log and the settings page.</summary>
     string Description { get; }
-
-    /// <summary>
-    /// Why the last check failed, or null when it did not. A source that quietly returns "nothing" for
-    /// a timeout would leave the window saying "up to date" while the machine is offline.
-    /// </summary>
-    string? LastError => null;
 }
 
 /// <summary>No update channel: the default, so nothing reaches the network by accident.</summary>
@@ -89,9 +86,14 @@ public sealed class NullUpdateSource : IUpdateSource
 /// <summary>A folder holding release.json and the package next to it (a share, a USB stick, a test).</summary>
 public sealed class FolderUpdateSource : IUpdateSource
 {
-    private const string Manifest = "release.json";
+    private readonly string _manifest;
 
-    public FolderUpdateSource(string directory) => Directory = Path.GetFullPath(directory);
+    /// <param name="manifest">Which file in the folder: release.json, or release-beta.json for the beta track.</param>
+    public FolderUpdateSource(string directory, string manifest = "release.json")
+    {
+        Directory = Path.GetFullPath(directory);
+        _manifest = manifest;
+    }
 
     public string Directory { get; }
 
@@ -99,7 +101,7 @@ public sealed class FolderUpdateSource : IUpdateSource
 
     public Task<ReleaseInfo?> CheckAsync(CancellationToken token = default)
     {
-        var manifest = Path.Combine(Directory, Manifest);
+        var manifest = Path.Combine(Directory, _manifest);
         if (!File.Exists(manifest)) return Task.FromResult<ReleaseInfo?>(null);
 
         try
@@ -124,217 +126,33 @@ public sealed class FolderUpdateSource : IUpdateSource
 public sealed class HttpUpdateSource : IUpdateSource
 {
     private readonly Uri _manifest;
-    private readonly TimeSpan _timeout;
-    private HttpClient _client;
-    private HttpClient _direct;
+    private readonly HttpClient _client;
 
     public HttpUpdateSource(string manifestUrl, TimeSpan? timeout = null)
     {
         _manifest = new Uri(manifestUrl, UriKind.Absolute);
-        _timeout = timeout ?? TimeSpan.FromSeconds(60);
-        _client = NewClient();
-        _direct = NewDirectClient();
-    }
 
-    private HttpClient NewClient()
-    {
-        var client = new HttpClient(Handler()) { Timeout = _timeout };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("LanternUI");
-        return client;
-    }
-
-    private HttpClient NewDirectClient()
-    {
-        var client = new HttpClient(Handler(direct: true)) { Timeout = _timeout };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("LanternUI");
-        return client;
-    }
-
-    /// <summary>The message plus whatever the transport said inside it.</summary>
-    private static string Describe(Exception e)
-    {
-        var text = e.Message;
-        for (var inner = e.InnerException; inner != null; inner = inner.InnerException)
-        {
-            // The transport often repeats the outer text; saying it twice helps nobody.
-            if (inner.Message.Length > 0 && !text.Contains(inner.Message, StringComparison.Ordinal))
-                text += " (" + inner.Message + ")";
-        }
-
-        return text;
+        // The plain client. The system proxy decides the route (WinINET on Windows, HTTP_PROXY on
+        // Linux), and a failure comes back as an exception for the caller to report: no retry, no
+        // fallback to a direct connection, no read timeout of our own.
+        _client = new HttpClient { Timeout = timeout ?? TimeSpan.FromSeconds(60) };
+        _client.DefaultRequestHeaders.UserAgent.ParseAdd("LanternUI");
     }
 
     public string Description => _manifest.ToString();
 
-    public string? LastError { get; private set; }
-
-    private static SocketsHttpHandler Handler(bool direct = false) => new()
-    {
-        UseProxy = !direct,
-        ConnectTimeout = TimeSpan.FromSeconds(10),
-        ConnectCallback = async (context, token) =>
-        {
-            var addresses = await Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, token).ConfigureAwait(false);
-            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
-            try
-            {
-                // IPv4 first: a host that advertises AAAA while the machine has no IPv6 route would
-                // otherwise sit in connect until the timeout expires.
-                foreach (var address in addresses.OrderBy(a => a.AddressFamily == AddressFamily.InterNetwork ? 0 : 1))
-                {
-                    try
-                    {
-                        await socket.ConnectAsync(new IPEndPoint(address, context.DnsEndPoint.Port), token).ConfigureAwait(false);
-                        return new NetworkStream(socket, ownsSocket: true);
-                    }
-                    catch (SocketException)
-                    {
-                        // try the next address
-                    }
-                }
-
-                throw new HttpRequestException("no address of " + context.DnsEndPoint.Host + " could be reached");
-            }
-            catch
-            {
-                socket.Dispose();
-                throw;
-            }
-        },
-    };
-
     public async Task<ReleaseInfo?> CheckAsync(CancellationToken token = default)
     {
-        LastError = null;
-
-        // The system proxy first, then a direct connection: a machine whose proxy is switched off but
-        // still configured would otherwise fail every check even where the channel is reachable.
-        foreach (var client in new[] { _client, _direct })
-        {
-            for (var attempt = 0; attempt < 2; attempt++)
-            {
-                try
-                {
-                    var json = await client.GetStringAsync(_manifest, token).ConfigureAwait(false);
-                    using var document = JsonDocument.Parse(json);
-                    return ReleaseInfo.Parse(document.RootElement);
-                }
-                catch (Exception e) when (e is HttpRequestException or JsonException or FormatException or TaskCanceledException)
-                {
-                    // Remembered, not swallowed: "could not reach the channel" and "nothing published"
-                    // are different answers and the window must not confuse them.
-                    LastError = Describe(e);
-                    if (attempt == 0 && e is not JsonException and not FormatException)
-                    {
-                        await Task.Delay(TimeSpan.FromMilliseconds(400), token).ConfigureAwait(false);
-                        continue;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        return null;
+        var json = await _client.GetStringAsync(_manifest, token).ConfigureAwait(false);
+        using var document = JsonDocument.Parse(json);
+        return ReleaseInfo.Parse(document.RootElement);
     }
 
     public async Task<Stream> OpenPackageAsync(ReleaseInfo release, CancellationToken token = default)
     {
         var address = new Uri(_manifest, release.PackageUrl);
-        Exception? last = null;
-
-        // Each failure retries on a fresh pool, and the second round goes out without the proxy: an
-        // SSL error is usually a socket the far end already dropped, and a dead proxy is a dead end.
-        foreach (var useProxy in new[] { true, false })
-        {
-            for (var attempt = 0; attempt < 3; attempt++)
-            {
-                try
-                {
-                    using var request = new HttpRequestMessage(HttpMethod.Get, address);
-                    request.Headers.Accept.ParseAdd("application/octet-stream");
-                    var response = await (useProxy ? _client : _direct)
-                        .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
-                    response.EnsureSuccessStatusCode();
-                    var body = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
-                    return new StalledStream(body, TimeSpan.FromSeconds(30));
-                }
-                catch (Exception e) when ((e is HttpRequestException or IOException or TaskCanceledException) && attempt < 2)
-                {
-                    last = e;
-                    if (useProxy)
-                    {
-                        _client.Dispose();
-                        _client = NewClient();
-                    }
-                    else
-                    {
-                        _direct.Dispose();
-                        _direct = NewDirectClient();
-                    }
-
-                    await Task.Delay(TimeSpan.FromMilliseconds(500 * (attempt + 1)), token).ConfigureAwait(false);
-                }
-                catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException)
-                {
-                    last = e;
-                    break;
-                }
-            }
-        }
-
-        throw new HttpRequestException(Describe(last!), last);
-    }
-}
-/// <summary>
-/// A download stream with a watchdog: if nothing arrives for the given time, the read fails instead of
-/// waiting forever — a proxy that stops forwarding used to leave "downloading" on screen at 0% for good.
-/// </summary>
-public sealed class StalledStream : Stream
-{
-    private readonly Stream _inner;
-    private readonly TimeSpan _budget;
-
-    public StalledStream(Stream inner, TimeSpan budget)
-    {
-        _inner = inner;
-        _budget = budget;
-    }
-
-    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token = default)
-    {
-        using var race = CancellationTokenSource.CreateLinkedTokenSource(token);
-        var read = _inner.ReadAsync(buffer, race.Token).AsTask();
-        var tick = Task.Delay(_budget, race.Token);
-
-        if (await Task.WhenAny(read, tick).ConfigureAwait(false) != read)
-        {
-            race.Cancel();
-            throw new IOException("the transfer stopped for " + _budget.TotalSeconds + " seconds");
-        }
-
-        return await read.ConfigureAwait(false);
-    }
-
-    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token) =>
-        ReadAsync(buffer.AsMemory(offset, count), token).AsTask();
-
-    public override int Read(byte[] buffer, int offset, int count) =>
-        ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
-
-    public override bool CanRead => true;
-    public override bool CanSeek => false;
-    public override bool CanWrite => false;
-    public override long Length => throw new NotSupportedException();
-    public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
-    public override void Flush() { }
-    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-    public override void SetLength(long value) => throw new NotSupportedException();
-    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing) _inner.Dispose();
-        base.Dispose(disposing);
+        var response = await _client.GetAsync(address, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
     }
 }

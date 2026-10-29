@@ -55,6 +55,9 @@ public sealed class UpdateService
 
     public UpdateStage Stage { get; private set; }
 
+    /// <summary>Whether a release marked as a beta may be offered (the beta track).</summary>
+    public bool AllowBeta { get; set; }
+
     /// <summary>Why the last check or download stopped, or empty when it did not.</summary>
     public string LastMessage { get; private set; } = "";
 
@@ -74,15 +77,18 @@ public sealed class UpdateService
         {
             release = await Source.CheckAsync(token).ConfigureAwait(false);
         }
-        catch (Exception e) when (e is IOException or HttpRequestException)
+        catch (Exception e) when (e is IOException or HttpRequestException or TaskCanceledException
+                                       or System.Text.Json.JsonException or FormatException)
         {
-            return Nothing("check failed: " + e.Message);
+            // The source lets its failures through; this is the one place that turns them into a line
+            // the window can show.
+            return Nothing(_text.T("The check failed.") + " " + Detail(e), failed: true);
         }
 
-        if (release == null)
-            return Source.LastError is { Length: > 0 } error
-                ? Nothing(_text.T("check failed: ") + error, failed: true)
-                : Nothing(_text.T("nothing published"));
+        if (release == null) return Nothing(_text.T("nothing published"));
+
+        if (release.Beta > 0 && !AllowBeta)
+            return Nothing(_text.T("This release is a beta and the channel is set to stable."));
 
         if (!UpdateVersion.IsNewer(release, CurrentVersion, CurrentBeta))
         {
@@ -112,38 +118,23 @@ public sealed class UpdateService
             Set(UpdateStage.Downloading);
             Write(LogLevel.Info, "update: downloading " + release.PackageUrl);
 
-            // Two attempts: a transfer that stops half way (a proxy that drops the tunnel, a cable
-            // pulled) must not leave "downloading" on screen — the file starts over instead.
-            for (var attempt = 0; ; attempt++)
-            {
-                try
-                {
-                    await using (var input = await Source.OpenPackageAsync(release, token).ConfigureAwait(false))
-                    await using (var output = File.Create(file))
-                        await CopyAsync(input, output, release.Size, token).ConfigureAwait(false);
-                    break;
-                }
-                catch (Exception e) when ((e is IOException or HttpRequestException or TimeoutException) && attempt == 0)
-                {
-                    Write(LogLevel.Warn, "update: " + e.Message + " — starting the download again");
-                    DownloadProgress?.Invoke(0, release.Size > 0 ? release.Size : -1);
-                    await Task.Delay(TimeSpan.FromMilliseconds(700), token).ConfigureAwait(false);
-                }
-            }
+            await using (var input = await Source.OpenPackageAsync(release, token).ConfigureAwait(false))
+            await using (var output = File.Create(file))
+                await CopyAsync(input, output, release.Size, token).ConfigureAwait(false);
 
             Set(UpdateStage.Verifying);
             var size = new FileInfo(file).Length;
             if (release.Size > 0 && size != release.Size)
             {
                 File.Delete(file);
-                return Stop(string.Format(CultureInfo.InvariantCulture, "size mismatch: expected {0}, got {1}", release.Size, size));
+                return Stop(_text.F($"The package is {size} bytes, not the {release.Size} the channel promised."));
             }
 
             var hash = await HashAsync(file, token).ConfigureAwait(false);
             if (!hash.Equals(release.Sha256, StringComparison.OrdinalIgnoreCase))
             {
                 File.Delete(file);
-                return Stop("sha256 mismatch: expected " + release.Sha256 + ", got " + hash);
+                return Stop(_text.T("The package does not match the sha256 in the channel."));
             }
 
             if (Directory.Exists(staging)) Directory.Delete(staging, recursive: true);
@@ -157,9 +148,10 @@ public sealed class UpdateService
             Write(LogLevel.Good, "update: " + release.Label + " is ready to install");
             return new UpdateResult(true, "ready: " + release.Label, staging, release);
         }
-        catch (Exception e) when (e is IOException or HttpRequestException or InvalidDataException or UnauthorizedAccessException)
+        catch (Exception e) when (e is IOException or HttpRequestException or InvalidDataException
+                                       or UnauthorizedAccessException or TaskCanceledException)
         {
-            return Stop(e.Message);
+            return Stop(_text.T("The download failed.") + " " + Detail(e));
         }
     }
 
@@ -196,6 +188,12 @@ public sealed class UpdateService
     public void ClearPending() => UpdateApplier.ClearPending(WorkDirectory);
 
     private string Label => CurrentBeta > 0 ? CurrentVersion + "-beta." + CurrentBeta : CurrentVersion.ToString();
+
+    /// <summary>
+    /// The innermost message only: the wrappers ("An error occurred while sending the request") add
+    /// nothing, and the deepest one is the text the system itself wrote, in the system's language.
+    /// </summary>
+    private static string Detail(Exception e) => e.GetBaseException().Message;
 
     private ReleaseInfo? Nothing(string reason, bool failed = false)
     {

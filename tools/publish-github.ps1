@@ -9,6 +9,7 @@ param(
     [Parameter(Mandatory = $true)][string]$Owner,
     [Parameter(Mandatory = $true)][string]$Repo,
     [string]$Version = "1.0.0",
+    [int]$Beta = 0,
     [string]$Token = $env:GH_TOKEN,
     [string]$Proxy = "http://127.0.0.1:7897",
     # Uploads go to uploads.github.com, which on some networks only answers without the proxy.
@@ -99,12 +100,13 @@ try {
         "source pushed to $Owner/$Repo ($Branch)"
     }
 
-    $releaseDir = Join-Path $root "release-$Version"
-    & (Join-Path $root 'tools\pack.ps1') -Version $Version -Mode self-contained-single -Out $releaseDir -Notes $Notes | Out-Host
+    $label = if ($Beta -gt 0) { "$Version-beta.$Beta" } else { $Version }
+    $releaseDir = Join-Path $root "release-$label"
+    & (Join-Path $root 'tools\pack.ps1') -Version $Version -Beta $Beta -Mode self-contained-single -Out $releaseDir -Notes $Notes | Out-Host
     $manifest = Get-Content (Join-Path $releaseDir 'release.json') -Raw | ConvertFrom-Json
     $zip = Join-Path $releaseDir $manifest.package
 
-    $tag = "v$Version"
+    $tag = "v$label"
     $release = $null
     try { $release = Invoke-GitHub 'GET' "/repos/$Owner/$Repo/releases/tags/$tag" } catch { $release = $null }
     if ($release) {
@@ -113,8 +115,8 @@ try {
     else {
         $release = Invoke-GitHub 'POST' "/repos/$Owner/$Repo/releases" @{
             tag_name = $tag
-            name     = $Version
-            body     = $(if ($Notes) { $Notes } else { "LanternUI $Version" })
+            name     = $label
+            body     = $(if ($Notes) { $Notes } else { "LanternUI $label" })
         }
         "release $tag created (id $($release.id))"
     }
@@ -144,6 +146,8 @@ try {
 
     $channelDir = Join-Path $root 'channel'
     New-Item -ItemType Directory -Path $channelDir -Force | Out-Null
+    # A beta is published beside the stable manifest, never over it.
+    $channelFile = if ($Beta -gt 0) { 'release-beta.json' } else { 'release.json' }
     [ordered]@{
         version   = $manifest.version
         beta      = $manifest.beta
@@ -153,15 +157,15 @@ try {
         size      = $manifest.size
         published = $manifest.published
     } | ConvertTo-Json | ForEach-Object {
-        [IO.File]::WriteAllText((Join-Path $channelDir 'release.json'), $_, (New-Object System.Text.UTF8Encoding($false)))
+        [IO.File]::WriteAllText((Join-Path $channelDir $channelFile), $_, (New-Object System.Text.UTF8Encoding($false)))
     }
 
-    & $git add 'channel/release.json'
-    & $git @('-c', 'user.name=publish', '-c', 'user.email=publish@local') commit -q -m "channel: $Version"
+    & $git add "channel/$channelFile"
+    & $git @('-c', 'user.name=publish', '-c', 'user.email=publish@local') commit -q -m "channel: $label"
     & $git @proxyArg @authArg push -q $remote "HEAD:refs/heads/$Branch"
     if ($LASTEXITCODE -ne 0) { throw 'could not push channel\release.json' }
 
-    $channelUrl = "https://raw.githubusercontent.com/$Owner/$Repo/$Branch/channel/release.json"
+    $channelUrl = "https://raw.githubusercontent.com/$Owner/$Repo/$Branch/channel/$channelFile"
     ''
     "release : https://github.com/$Owner/$Repo/releases/tag/$tag"
     "channel : $channelUrl"

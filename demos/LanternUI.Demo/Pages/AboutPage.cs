@@ -24,9 +24,17 @@ public sealed class AboutPage : PageBase
 
         // Editable: without a row here the only way to point the build at a channel was a command
         // line switch or hand-editing settings.json, and the page then said "no channel configured".
-        var channel = TextRow(loc.T("Update channel"), loc.T("A folder or address holding release.json; empty for none."),
+        var channel = TextRow(loc.T("Channel address"), loc.T("A folder or address holding release.json; empty for none."),
             loc.T(@"For example D:\releases"), () => S.Str("ui_update_source"),
             value => S.Set("ui_update_source", value), glyph: Glyphs.Folder, width: 420);
+
+        ComboRow(loc.T("Update channel"), loc.T("Stable follows finished releases; beta also takes pre-releases."),
+            new[]
+            {
+                new Choice(loc.T("Stable"), UpdateChannel.Stable),
+                new Choice(loc.T("Beta"), UpdateChannel.Beta),
+            },
+            () => S.Str("ui_update_channel"), value => S.Set("ui_update_channel", value), glyph: Glyphs.Folder);
 
         var body = new StackPanel();
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
@@ -55,7 +63,13 @@ public sealed class AboutPage : PageBase
         UpdateService? Service()
         {
             var source = S.Str("ui_update_source").Trim();
-            return source.Length == 0 ? null : new UpdateService(Channel(source), work, version, 0, state.Sink, loc);
+            if (source.Length == 0) return null;
+
+            var beta = UpdateChannel.IsBeta(S.Str("ui_update_channel"));
+            return new UpdateService(UpdateChannel.Source(source, beta), work, version, 0, state.Sink, loc)
+            {
+                AllowBeta = beta,
+            };
         }
 
         body.Children.Add(buttons);
@@ -97,7 +111,7 @@ public sealed class AboutPage : PageBase
                 if (release == null)
                 {
                     SetHint(status, service.Stage == UpdateStage.Failed
-                        ? loc.T("The check failed.") + " " + service.LastMessage
+                        ? service.LastMessage
                         : loc.T("Up to date."));
                     install.Visibility = Visibility.Collapsed;
                     return;
@@ -159,7 +173,7 @@ public sealed class AboutPage : PageBase
                 if (!result.Ok)
                 {
                     bar.Visibility = Visibility.Collapsed;
-                    SetHint(status, loc.F($"Download refused: {result.Message}"));
+                    SetHint(status, result.Message);
                     return;
                 }
 
@@ -212,10 +226,7 @@ public sealed class AboutPage : PageBase
         return block;
     }
 
-    private static IUpdateSource Channel(string source) =>
-        source.Contains("://", StringComparison.Ordinal)
-            ? new HttpUpdateSource(source)
-            : new FolderUpdateSource(source);
+
 
     public AboutPage(IAppState app, IShell shell, ILocalizer loc)
         : base(app, loc, loc.T("About"), loc.T("What this build is: the first slice of the framework, P1."), shell.Layout)

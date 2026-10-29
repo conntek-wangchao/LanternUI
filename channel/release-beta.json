@@ -1,0 +1,9 @@
+{
+    "version":  "1.0.5",
+    "beta":  1,
+    "notes":  "beta track: stable and beta manifests side by side",
+    "package":  "https://github.com/conntek-wangchao/LanternUI/releases/download/v1.0.5-beta.1/LanternUI-1.0.5-win-x64-self-contained-single.zip",
+    "sha256":  "3d87486fb59d9a5b69dc8f83fc1c382fb34c6dabadec903e0b6392605b9a082d",
+    "size":  66634171,
+    "published":  "2026-10-29T08:47:35Z"
+}

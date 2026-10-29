@@ -243,5 +243,13 @@
   "registers.0_registers": "{0} registers",
   "updates.for_example_d_releases": "For example D:\\releases",
   "updates.downloading_0_1_of_2_mb": "Downloading {0}... {1}% of {2} MB",
-  "updates.downloading_0_1_mb": "Downloading {0}... {1} MB"
+  "updates.downloading_0_1_mb": "Downloading {0}... {1} MB",
+  "updates.the_download_failed": "The download failed.",
+  "updates.the_package_is_0_bytes_not_the_1_the_channel_promi": "The package is {0} bytes, not the {1} the channel promised.",
+  "updates.the_package_does_not_match_the_sha256_in_the_chann": "The package does not match the sha256 in the channel.",
+  "updates.channel_address": "Channel address",
+  "updates.stable": "Stable",
+  "updates.beta": "Beta",
+  "updates.stable_follows_finished_releases_beta_also_takes": "Stable follows finished releases; beta also takes pre-releases.",
+  "updates.this_release_is_a_beta_and_the_channel_is_set_to_st": "This release is a beta and the channel is set to stable."
 }

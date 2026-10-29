@@ -243,5 +243,13 @@
   "registers.0_registers": "{0} 个寄存器",
   "updates.for_example_d_releases": "例如 D:\\releases",
   "updates.downloading_0_1_of_2_mb": "正在下载 {0}… {1}%（共 {2} MB）",
-  "updates.downloading_0_1_mb": "正在下载 {0}… {1} MB"
+  "updates.downloading_0_1_mb": "正在下载 {0}… {1} MB",
+  "updates.the_download_failed": "下载失败。",
+  "updates.the_package_is_0_bytes_not_the_1_the_channel_promi": "包的大小是 {0} 字节，与通道声明的 {1} 字节不符。",
+  "updates.the_package_does_not_match_the_sha256_in_the_chann": "包与通道里的 sha256 不一致。",
+  "updates.channel_address": "通道地址",
+  "updates.stable": "稳定版",
+  "updates.beta": "测试版",
+  "updates.stable_follows_finished_releases_beta_also_takes": "稳定版只跟随正式发布；测试版也会接收预发布。",
+  "updates.this_release_is_a_beta_and_the_channel_is_set_to_st": "这个发布是测试版，而更新通道设为稳定版。"
 }

@@ -82,13 +82,18 @@ public class UpdateTests
     public async Task A_channel_that_cannot_be_reached_says_so_instead_of_up_to_date()
     {
         // Nothing listens on port 1: the connection is refused at once, so the check is fast and real.
-        var source = new HttpUpdateSource("http://127.0.0.1:1/release.json", TimeSpan.FromSeconds(2));
+        // The source lets the failure through; the service turns it into a line for the window.
+        var work = NewDirectory();
+        var service = new UpdateService(
+            new HttpUpdateSource("http://127.0.0.1:1/release.json", TimeSpan.FromSeconds(2)), work, new Version(1, 0, 0));
 
-        var release = await source.CheckAsync();
+        var release = await service.CheckAsync();
 
         Assert.Null(release);
-        Assert.False(string.IsNullOrWhiteSpace(source.LastError));
+        Assert.Equal(UpdateStage.Failed, service.Stage);
+        Assert.False(string.IsNullOrWhiteSpace(service.LastMessage));
     }
+
     [Fact]
     public async Task Only_a_newer_release_is_offered()
     {
