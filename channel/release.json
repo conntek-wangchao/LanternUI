@@ -1,4 +1,4 @@
-﻿{
+{
     "version":  "1.0.2",
     "beta":  0,
     "notes":  "download progress bar, retried downloads, IPv4-first channel lookup",
