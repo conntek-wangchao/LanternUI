@@ -1,53 +1,7 @@
-# 已发布：conntek-wangchao/LanternUI
-
-## 现在的事实（2026-10-29 实测通过）
-
-| 项 | 地址 / 结果 |
-|---|---|
-| 仓库 | https://github.com/conntek-wangchao/LanternUI （public，默认分支 main） |
-| 首个提交 | e3912e8 — 框架 + 示例 + 工具，106 个文件 / 1.4 MB（bin、obj、shots、release-*、sandbox、tmp 全部忽略） |
-| 发布 | https://github.com/conntek-wangchao/LanternUI/releases/tag/v1.0.1 |
-| 资产 | LanternUI-1.0.1-win-x64-self-contained-single.zip（63.5 MB）与 release.json |
-| 更新通道 | https://raw.githubusercontent.com/conntek-wangchao/LanternUI/main/channel/release.json |
-| 通道提交 | 5b899a5 — channel/release.json（package 指向 Release 资产） |
-
-## 联网更新的实测结果
-
-把一份 1.0.0 装在沙箱里，通道指向上面那个 raw 地址：
-
-~~~
-check exit=0                      <- 读到清单：1.0.1 is available
-download exit=0                   <- 从 Release 资产下载 63.5 MB，size + sha256 校验通过，已暂存
-start  exit=0                     <- 落地
-installed: 1.0.0.0 -> 1.0.1.0
-log: update: downloading https://github.com/.../releases/download/v1.0.1/....zip
-     update: 1.0.1 is ready to install
-     update: LanternUI.Demo.exe
-~~~
-
-## 这台机器的网络注意事项（重要）
-
-| 目标 | 直连 | 走代理 127.0.0.1:7897 |
-|---|---|---|
-| api.github.com | 200 | 200 |
-| github.com | 超时 | 200 |
-| raw.githubusercontent.com | 200 | 200 |
-| uploads.github.com（传资产） | 201，必须直连 | 000 |
-
-所以：
-
-- git push 要带 -c http.proxy=http://127.0.0.1:7897
-- 上传 Release 资产要直连（tools/publish-github.ps1 的 -UploadProxy 默认留空即直连）
-- 应用自己联网更新时，进程需要 HTTPS_PROXY（.NET 的 HttpClient 认这个变量）：
-
-~~~
-$env:HTTPS_PROXY = 'http://127.0.0.1:7897'
-$env:HTTP_PROXY  = 'http://127.0.0.1:7897'
-sandbox\install\LanternUI.Demo.exe      # 关于 -> 更新通道填 raw 地址 -> 立即检查
-~~~
-
-不加这两个变量时，检查清单（raw）仍能通过，但下载资产会失败（github.com 直连不通），
-提示行会显示 下载被拒绝：...
+raw.githubusercontent.com 走 CDN，发布后**大约 5 分钟**才更新，而且**查询串不能绕开**
+（实测 `?v=1.0.3` 与不带参数返回的都是旧版本）。想立刻确认，用 API：
+`https://api.github.com/repos/<owner>/<repo>/contents/channel/release.json?ref=main`。
+要彻底避免延迟，就把通道放到自家静态服务器并加 `Cache-Control: no-store`。
 
 ## 怎么发下一个版本
 

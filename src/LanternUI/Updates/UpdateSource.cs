@@ -256,7 +256,8 @@ public sealed class HttpUpdateSource : IUpdateSource
                     var response = await (useProxy ? _client : _direct)
                         .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
                     response.EnsureSuccessStatusCode();
-                    return await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
+                    var body = await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false);
+                    return new StalledStream(body, TimeSpan.FromSeconds(30));
                 }
                 catch (Exception e) when ((e is HttpRequestException or IOException or TaskCanceledException) && attempt < 2)
                 {
@@ -283,5 +284,57 @@ public sealed class HttpUpdateSource : IUpdateSource
         }
 
         throw new HttpRequestException(Describe(last!), last);
+    }
+}
+/// <summary>
+/// A download stream with a watchdog: if nothing arrives for the given time, the read fails instead of
+/// waiting forever — a proxy that stops forwarding used to leave "downloading" on screen at 0% for good.
+/// </summary>
+public sealed class StalledStream : Stream
+{
+    private readonly Stream _inner;
+    private readonly TimeSpan _budget;
+
+    public StalledStream(Stream inner, TimeSpan budget)
+    {
+        _inner = inner;
+        _budget = budget;
+    }
+
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken token = default)
+    {
+        using var race = CancellationTokenSource.CreateLinkedTokenSource(token);
+        var read = _inner.ReadAsync(buffer, race.Token).AsTask();
+        var tick = Task.Delay(_budget, race.Token);
+
+        if (await Task.WhenAny(read, tick).ConfigureAwait(false) != read)
+        {
+            race.Cancel();
+            throw new IOException("the transfer stopped for " + _budget.TotalSeconds + " seconds");
+        }
+
+        return await read.ConfigureAwait(false);
+    }
+
+    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken token) =>
+        ReadAsync(buffer.AsMemory(offset, count), token).AsTask();
+
+    public override int Read(byte[] buffer, int offset, int count) =>
+        ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
+
+    public override bool CanRead => true;
+    public override bool CanSeek => false;
+    public override bool CanWrite => false;
+    public override long Length => throw new NotSupportedException();
+    public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+    public override void Flush() { }
+    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+    public override void SetLength(long value) => throw new NotSupportedException();
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) _inner.Dispose();
+        base.Dispose(disposing);
     }
 }

@@ -112,9 +112,24 @@ public sealed class UpdateService
             Set(UpdateStage.Downloading);
             Write(LogLevel.Info, "update: downloading " + release.PackageUrl);
 
-            await using (var input = await Source.OpenPackageAsync(release, token).ConfigureAwait(false))
-            await using (var output = File.Create(file))
-                await CopyAsync(input, output, release.Size, token).ConfigureAwait(false);
+            // Two attempts: a transfer that stops half way (a proxy that drops the tunnel, a cable
+            // pulled) must not leave "downloading" on screen — the file starts over instead.
+            for (var attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    await using (var input = await Source.OpenPackageAsync(release, token).ConfigureAwait(false))
+                    await using (var output = File.Create(file))
+                        await CopyAsync(input, output, release.Size, token).ConfigureAwait(false);
+                    break;
+                }
+                catch (Exception e) when ((e is IOException or HttpRequestException or TimeoutException) && attempt == 0)
+                {
+                    Write(LogLevel.Warn, "update: " + e.Message + " — starting the download again");
+                    DownloadProgress?.Invoke(0, release.Size > 0 ? release.Size : -1);
+                    await Task.Delay(TimeSpan.FromMilliseconds(700), token).ConfigureAwait(false);
+                }
+            }
 
             Set(UpdateStage.Verifying);
             var size = new FileInfo(file).Length;
